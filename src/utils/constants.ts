@@ -20,3 +20,5 @@ export const LONG_BREAK_BG_RUNNING = 'bg-gradient-to-br from-emerald-800 to-teal
 
 export const HISTORY_STORAGE_KEY = 'pomodoroHistory_v1';
 export const SETTINGS_STORAGE_KEY = 'pomodoroSettings_v1';
+export const BACKLOG_STORAGE_KEY = 'pomohero_backlog';
+

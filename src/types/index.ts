@@ -1,11 +1,12 @@
+// src/types/index.ts
 export type Phase = 'Work' | 'Short Break' | 'Long Break';
 
 export interface HistoryEntry {
     id: string;
-    startTime: number; // <<< ADDED: Timestamp when the focus session started
+    startTime: number;
     endTime: number;
-    duration: number; // Duration in seconds (can be calculated or stored)
-    focusPoints: string;
+    duration: number;
+    focusPoints: string[]; // Deve ser sempre string[]
     feedbackNotes: string;
 }
 
@@ -17,7 +18,6 @@ export interface PomodoroSettings {
     soundEnabled: boolean;
 }
 
-// Represents the dynamic styles calculated based on phase/state
 export interface DynamicStyles {
     baseBgColor: string;
     finalHistoryBorderColor: string;
@@ -28,9 +28,16 @@ export interface DynamicStyles {
     inputBgColor: string;
     phaseText: string;
     modalAccentColor: string;
-    finalBgColor: string; // Includes override logic
+    finalBgColor: string;
 }
 
-export type HistoryUpdateData = Partial<Pick<HistoryEntry, 'focusPoints' | 'feedbackNotes' | 'startTime' | 'endTime' | 'duration'>>;
+// HistoryUpdateData: focusPoints é opcional e deve ser string[]
+export type HistoryUpdateData = Partial<Omit<HistoryEntry, 'id' | 'focusPoints'> & { focusPoints?: string[] }>;
 
-export type ManualHistoryEntryData = Omit<HistoryEntry, 'id'>;
+// ManualHistoryEntryData: focusPoints é obrigatório e deve ser string[]
+export type ManualHistoryEntryData = Omit<HistoryEntry, 'id' | 'focusPoints'> & { focusPoints: string[] };
+
+export interface BacklogTask {
+    id: string;
+    text: string;
+}
