@@ -126,13 +126,13 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         const trimmedPoint = point.trim();
         if (trimmedPoint) {
             setCurrentFocusPoints(prev => [...prev, trimmedPoint]);
-            if (playSoundEffect) playSound('click');
+            if (playSoundEffect) playSound('confirm');
         }
     }, [setCurrentFocusPoints, playSound]);
 
     const removeFocusPoint = useCallback((index: number) => {
         setCurrentFocusPoints(prev => prev.filter((_, i) => i !== index));
-        playSound('click');
+        playSound('remove');
     }, [setCurrentFocusPoints, playSound]);
 
     // <<< NOVAS FUNÇÕES CRUD para nextFocusPlans >>>
@@ -140,13 +140,13 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         const trimmedPlan = plan.trim();
         if (trimmedPlan) {
             setNextFocusPlans(prev => [...prev, trimmedPlan]);
-            playSound('click');
+            playSound('confirm');
         }
     }, [setNextFocusPlans, playSound]);
 
     const removeNextFocusPlan = useCallback((index: number) => {
         setNextFocusPlans(prev => prev.filter((_, i) => i !== index));
-        playSound('click');
+        playSound('remove');
     }, [setNextFocusPlans, playSound]);
 
      const updateNextFocusPlan = useCallback((index: number, newText: string) => {
@@ -156,7 +156,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
              return;
          }
          setNextFocusPlans(prev => prev.map((plan, i) => i === index ? trimmedText : plan));
-        playSound('click');
+        playSound('confirm');
     }, [setNextFocusPlans, playSound]);
     // <<< FIM NOVAS FUNÇÕES CRUD >>>
 
@@ -205,52 +205,61 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             updatedData.nextFocusPlans = undefined;
         }
         setHistory(prevHistory => prevHistory.map(entry => entry.id === id ? { ...entry, ...updatedData } : entry).sort((a, b) => b.startTime - a.startTime));
-        playSound('click');
+        playSound('confirm');
     }, [setHistory, playSound]);
 
     const deleteHistoryEntry = useCallback((id: string) => {
-        if (window.confirm("Tem certeza que deseja remover esta entrada do histórico?")) {
-            setHistory(prevHistory => prevHistory.filter(entry => entry.id !== id));
-            playSound('buttonPress');
-        }
+        playSound('select');
+        setTimeout(() => {
+            if (window.confirm("Tem certeza que deseja remover esta entrada do histórico?")) {
+                setHistory(prevHistory => prevHistory.filter(entry => entry.id !== id));
+                playSound('remove');
+            }
+        }, 0);
     }, [setHistory, playSound]);
 
     const addManualHistoryEntry = useCallback((entryData: ManualHistoryEntryData) => {
         const newEntry: HistoryEntry = { ...entryData, id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}` };
         setHistory(prevHistory => [newEntry, ...prevHistory].sort((a, b) => b.startTime - a.startTime));
-        playSound('click');
+        playSound('confirm');
     }, [setHistory, playSound]);
 
     const clearHistory = useCallback(() => {
-        playSound('buttonPress');
-        if (window.confirm("Tem certeza que deseja limpar todo o histórico de foco?")) {
-            setHistory([]); alert("Histórico limpo.");
-        }
+        playSound('select');
+        setTimeout(() => {
+            if (window.confirm("Tem certeza que deseja limpar todo o histórico de foco?")) {
+                setHistory([]);
+                playSound('remove');
+            }
+        }, 0);
      }, [playSound, setHistory]);
 
     const addBacklogTask = useCallback((text: string) => {
         const trimmedText = text.trim();
         if (!trimmedText) return;
         const newTask: BacklogTask = { id: `backlog-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, text: trimmedText, };
-        setBacklogTasks(prev => [newTask, ...prev]); playSound('click');
+        setBacklogTasks(prev => [newTask, ...prev]); playSound('confirm');
     }, [setBacklogTasks, playSound]);
 
     const updateBacklogTask = useCallback((id: string, newText: string) => {
         const trimmedText = newText.trim();
         if (!trimmedText) { alert("A tarefa não pode ficar vazia."); return; }
-        setBacklogTasks(prev => prev.map(task => task.id === id ? { ...task, text: trimmedText } : task )); playSound('click');
+        setBacklogTasks(prev => prev.map(task => task.id === id ? { ...task, text: trimmedText } : task )); playSound('confirm');
     }, [setBacklogTasks, playSound]);
 
     const deleteBacklogTask = useCallback((id: string, playSoundEffect = true) => {
         setBacklogTasks(prev => prev.filter(task => task.id !== id));
-        if (playSoundEffect) playSound('buttonPress');
+        if (playSoundEffect) playSound('remove');
     }, [setBacklogTasks, playSound]);
 
     const clearBacklog = useCallback(() => {
-        playSound('buttonPress');
-        if (window.confirm("Tem certeza que deseja limpar todas as tarefas do backlog?")) {
-            setBacklogTasks([]); alert("Backlog limpo.");
-        }
+        playSound('select');
+        setTimeout(() => {
+            if (window.confirm("Tem certeza que deseja limpar todas as tarefas do backlog?")) {
+                setBacklogTasks([]);
+                playSound('remove');
+            }
+        }, 0);
     }, [playSound, setBacklogTasks]);
 
     const moveTaskToFocus = useCallback((taskId: string) => {
@@ -258,7 +267,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         if (!taskToMove) { console.warn("Tarefa não encontrada para mover:", taskId); return; }
         addFocusPoint(taskToMove.text, false);
         deleteBacklogTask(taskId, false);
-        playSound('click');
+        playSound('confirm');
     }, [backlogTasks, addFocusPoint, deleteBacklogTask, playSound]);
 
     const clearFocusStartEffect = useCallback(() => {
@@ -370,11 +379,11 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         updateBreakInfoInHistory, setCurrentFeedbackNotes, setNextFocusPlans
      ]);
 
-    const openSettingsModal = useCallback(() => { playSound('click'); setIsSettingsOpen(true); }, [playSound, setIsSettingsOpen]);
-    const closeSettingsModal = useCallback(() => { playSound('click'); setIsSettingsOpen(false); }, [playSound, setIsSettingsOpen]);
+    const openSettingsModal = useCallback(() => { playSound('buttonPress'); setIsSettingsOpen(true); }, [playSound, setIsSettingsOpen]);
+    const closeSettingsModal = useCallback(() => { playSound('buttonPress'); setIsSettingsOpen(false); }, [playSound, setIsSettingsOpen]);
 
     const handleSettingChange = useCallback((settingKey: keyof PomodoroSettings, value: number | boolean) => {
-         if (typeof value === 'boolean') { playSound('click'); }
+         if (typeof value === 'boolean') { playSound('buttonPress'); }
          setSettings(prevSettings => {
              const newSettings = { ...prevSettings, [settingKey]: value };
              if (!isRunning && !isEffectRunning) {
@@ -393,7 +402,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const adjustTimeLeft = useCallback((newSeconds: number) => {
         if (currentPhase === 'Work' && !isRunning && !isEffectRunning) {
             const validatedSeconds = Math.max(0, Math.min(newSeconds, 99 * 60 + 59));
-            if (validatedSeconds !== timeLeft) { setTimeLeft(validatedSeconds); playSound('click'); }
+            if (validatedSeconds !== timeLeft) { setTimeLeft(validatedSeconds); playSound('buttonPress'); }
         }
      }, [currentPhase, isRunning, isEffectRunning, playSound, timeLeft, setTimeLeft]);
 

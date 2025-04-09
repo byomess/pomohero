@@ -78,7 +78,7 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
         }
     };
 
-    const formElementStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm custom-scrollbar-thin ${styles.inputBgColor} ${styles.textColor} ${styles.modalAccentColor}`;
+    const formElementStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm custom-scrollbar ${styles.inputBgColor} ${styles.textColor} ${styles.modalAccentColor}`;
     const labelStyle = "block text-xs font-medium mb-1 opacity-90";
     const dateInputStyle = { colorScheme: 'dark' };
 

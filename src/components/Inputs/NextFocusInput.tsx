@@ -119,56 +119,60 @@ export const NextFocusInput: React.FC = () => {
                 </button>
             </div>
 
-            {nextFocusPlans.length > 0 && (
-                <ul className="mt-2 space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar-thin pr-1">
-                    {nextFocusPlans.map((plan, index) => (
-                        <li key={`nextplan-${index}`} className="flex items-center justify-between text-sm bg-black/10 p-1.5 rounded min-h-[36px]">
-                            {editingIndex === index ? (
-                                <>
-                                    <input
-                                        ref={editInputRef}
-                                        type="text"
-                                        value={editText}
-                                        onChange={(e) => setEditText(e.target.value)}
-                                        onKeyDown={handleEditKeyDown}
-                                        className={`flex-grow p-1 mr-1 rounded border border-white/20 focus:ring-1 focus:outline-none text-sm ${styles.inputBgColor} ${styles.textColor} focus:${styles.modalAccentColor}`}
-                                        aria-label={`Editar plano: ${plan}`}
-                                    />
-                                    <div className="flex items-center space-x-1 flex-shrink-0">
-                                         <button
-                                            type="button" onClick={handleEditSave}
-                                            className={`p-1 rounded text-green-400 hover:bg-green-500/20 hover:text-green-300 transition-colors`}
-                                            aria-label="Salvar alteração" title="Salvar"
-                                        > <FiCheck className="h-3.5 w-3.5" /> </button>
+            <div className="relative mt-2 max-h-30 min-h-30 overflow-y-scroll custom-scrollbar pr-1">
+                {nextFocusPlans.length > 0 && (
+                    <ul className="space-y-1.5">
+                        {nextFocusPlans.map((plan, index) => (
+                            <li key={`nextplan-${index}`} className="flex items-center justify-between text-sm bg-black/10 p-1.5 rounded min-h-[36px]">
+                                {editingIndex === index ? (
+                                    <>
+                                        <input
+                                            ref={editInputRef}
+                                            type="text"
+                                            value={editText}
+                                            onChange={(e) => setEditText(e.target.value)}
+                                            onKeyDown={handleEditKeyDown}
+                                            className={`flex-grow p-1 mr-1 rounded border border-white/20 focus:ring-1 focus:outline-none text-sm ${styles.inputBgColor} ${styles.textColor} focus:${styles.modalAccentColor}`}
+                                            aria-label={`Editar plano: ${plan}`}
+                                        />
+                                        <div className="flex items-center space-x-1 flex-shrink-0">
+                                            <button
+                                                type="button" onClick={handleEditSave}
+                                                className={`p-1 rounded text-green-400 hover:bg-green-500/20 hover:text-green-300 transition-colors`}
+                                                aria-label="Salvar alteração" title="Salvar"
+                                            > <FiCheck className="h-3.5 w-3.5" /> </button>
+                                            <button
+                                                type="button" onClick={handleEditCancel}
+                                                className={`p-1 rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors`}
+                                                aria-label="Cancelar edição" title="Cancelar"
+                                            > <FiX className="h-3.5 w-3.5" /> </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span
+                                            className={`break-all mr-2 ${!isReadOnly ? 'cursor-pointer hover:opacity-75' : 'cursor-default'}`}
+                                            onClick={() => handleEditStart(index)}
+                                            title={isReadOnly ? plan : "Clique para editar"}
+                                        > {plan} </span>
                                         <button
-                                            type="button" onClick={handleEditCancel}
-                                            className={`p-1 rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors`}
-                                            aria-label="Cancelar edição" title="Cancelar"
-                                        > <FiX className="h-3.5 w-3.5" /> </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <span
-                                        className={`break-all mr-2 ${!isReadOnly ? 'cursor-pointer hover:opacity-75' : 'cursor-default'}`}
-                                        onClick={() => handleEditStart(index)}
-                                        title={isReadOnly ? plan : "Clique para editar"}
-                                    > {plan} </span>
-                                    <button
-                                        type="button" onClick={() => handleRemoveClick(index)}
-                                        className={`p-1 rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors ${buttonDisabledStyle}`}
-                                        disabled={isReadOnly}
-                                        aria-label={`Remover plano: ${plan}`} title="Remover plano"
-                                    > <FiTrash2 className="h-3.5 w-3.5" /> </button>
-                                </>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            )}
-            {nextFocusPlans.length === 0 && !isReadOnly && (
-                 <p className="text-xs text-center opacity-60 italic mt-2">Nenhum plano definido ainda.</p>
-            )}
+                                            type="button" onClick={() => handleRemoveClick(index)}
+                                            className={`p-1 rounded text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors ${buttonDisabledStyle}`}
+                                            disabled={isReadOnly}
+                                            aria-label={`Remover plano: ${plan}`} title="Remover plano"
+                                        > <FiTrash2 className="h-3.5 w-3.5" /> </button>
+                                    </>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                {(nextFocusPlans.length === 0 && !isReadOnly) ? (
+                    <p className="absolute top-0 text-xs h-full w-full flex justify-center items-center opacity-60 italic">Nenhum plano definido ainda.</p>
+                ) : (
+                    <p className="absolute top-0 text-xs">{' '}</p>
+                )}
+            </div>
         </div>
     );
 };

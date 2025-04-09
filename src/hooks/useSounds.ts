@@ -14,6 +14,9 @@ const soundMap = {
         volume: 0.8,
         loop: false // Default to not looping for single plays
     }),
+    select: new Howl({ src: ['/sounds/select.ogg', '/sounds/select.mp3'], volume: 0.5 }),
+    confirm: new Howl({ src: ['/sounds/confirm.ogg', '/sounds/confirm.wav'], volume: 0.5 }),
+    remove: new Howl({ src: ['/sounds/remove.ogg', '/sounds/remove.mp3'], volume: 0.7 }),
     focusStart: new Howl({ src: ['/sounds/focus_start.ogg', '/sounds/focus_start.wav'], volume: 0.8 }),
 };
 

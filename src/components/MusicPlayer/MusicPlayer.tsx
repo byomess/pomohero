@@ -34,6 +34,7 @@ export const MusicPlayer: React.FC = () => {
 
     const playTrack = useCallback((index: number) => {
         if (index >= 0 && index < activePlaylist.length) {
+            playSound('buttonPress');
             setCurrentTrackIndex(index); setIsPlaying(true);
         } else {
             setCurrentTrackIndex(null); setIsPlaying(false);
@@ -53,7 +54,7 @@ export const MusicPlayer: React.FC = () => {
     const playNext = useCallback(() => {
         if(activePlaylist.length === 0) return;
         const nextIndex = currentTrackIndex === null ? 0 : (currentTrackIndex + 1) % activePlaylist.length;
-        playTrack(nextIndex); playSound('click');
+        playTrack(nextIndex); playSound('buttonPress');
     }, [currentTrackIndex, activePlaylist.length, playTrack, playSound]);
 
     const playPrevious = useCallback(() => {
@@ -63,11 +64,15 @@ export const MusicPlayer: React.FC = () => {
             const prevIndex = currentTrackIndex === null ? activePlaylist.length -1 : (currentTrackIndex - 1 + activePlaylist.length) % activePlaylist.length;
             playTrack(prevIndex);
         }
-         playSound('click');
+         playSound('buttonPress');
     }, [currentTrackIndex, activePlaylist.length, playTrack, playSound]);
 
     const handleSeek = (time: number) => {
-        if (audioRef.current) { audioRef.current.currentTime = time; setCurrentTime(time); }
+        if (audioRef.current) {
+            playSound('buttonPress');
+            audioRef.current.currentTime = time;
+            setCurrentTime(time);
+        }
     };
 
     // Separate effect JUST for setting volume
@@ -81,18 +86,19 @@ export const MusicPlayer: React.FC = () => {
 
     const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = parseFloat(event.target.value);
-        setVolume(newVolume); // This will trigger the useEffect above
+        setVolume(newVolume);
         if (newVolume > 0) setLastVolume(newVolume);
     };
 
      const toggleVolumeSlider = (event: React.MouseEvent) => {
-        event.stopPropagation(); // Prevent click outside handler from closing immediately
+        playSound('buttonPress');
+        event.stopPropagation();
         setIsVolumeSliderVisible(prev => !prev);
     };
 
     const toggleMute = (event: React.MouseEvent) => {
          event.stopPropagation(); // Prevent closing slider if open
-         playSound('click');
+         playSound('buttonPress');
          if(volume > 0) { // If currently not muted (volume > 0)
              setLastVolume(volume); // Store current volume
              setVolume(0); // Set volume to 0 (will trigger useEffect)
@@ -107,15 +113,11 @@ export const MusicPlayer: React.FC = () => {
         if (audioRef.current && currentTrack) {
             const wasPlaying = isPlaying; // Store if it was playing before src change
             audioRef.current.src = currentTrack.src;
-            // audioRef.current.volume is handled by the separate volume effect
             if (wasPlaying) { // Only attempt to play if it should be playing
-                 // Load is implicitly called by setting src, wait for canplay event or use timeout
                  const playPromise = audioRef.current.play();
                  if(playPromise !== undefined) {
                      playPromise.catch(e => {
                          console.error("Error playing after src change:", e);
-                         // Maybe set isPlaying to false if auto-play fails
-                         // setIsPlaying(false);
                      });
                  }
             }
@@ -160,7 +162,7 @@ export const MusicPlayer: React.FC = () => {
          if (audioRef.current) {
              audioRef.current.pause(); audioRef.current.currentTime = 0; audioRef.current.src = '';
          }
-         setCurrentTime(0); setDuration(0); playSound('click');
+         setCurrentTime(0); setDuration(0); playSound('buttonPress');
          setIsVolumeSliderVisible(false); // Close volume slider on category change
     };
 

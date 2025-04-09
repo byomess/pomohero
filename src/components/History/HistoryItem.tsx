@@ -121,7 +121,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
     const sectionLabelStyle = "flex items-center gap-1.5 font-medium text-sm opacity-90 mb-1";
     const sectionIconStyle = "w-3.5 h-3.5";
     const contentTextStyle = "text-sm opacity-90 leading-relaxed";
-    const editTextAreaStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm resize-none custom-scrollbar-thin ${styles.inputBgColor} ${styles.textColor} focus:${styles.modalAccentColor}`;
+    const editTextAreaStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm resize-none custom-scrollbar ${styles.inputBgColor} ${styles.textColor} focus:${styles.modalAccentColor}`;
     const baseButtonStyle = `p-1.5 rounded-md transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-offset-black/30`;
     const actionIconStyle = "h-4 w-4";
 
