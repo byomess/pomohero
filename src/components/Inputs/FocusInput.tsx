@@ -27,7 +27,7 @@ export const FocusInput: React.FC = () => {
                 onChange={(e) => setCurrentFocusPoints(e.target.value)}
                 placeholder="Defina seus pontos de foco..."
                 onKeyDown={debouncedPlayTypingSound}
-                className={`w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm resize-none ${styles.inputBgColor} ${styles.textColor} transition-colors duration-500 ${readOnlyInputStyle}`}
+                className={`w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm custom-scrollbar ${styles.inputBgColor} ${styles.textColor} transition-colors duration-500 ${readOnlyInputStyle}`}
                 readOnly={isReadOnly}
                 aria-readonly={isReadOnly}
             />

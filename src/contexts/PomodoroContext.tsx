@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { HistoryEntry, Phase, PomodoroSettings, DynamicStyles, HistoryUpdateData, ManualHistoryEntryData } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+// Make sure the path to useSounds is correct based on your project structure
 import { useSounds, SoundName } from '../hooks/useSounds';
 import {
     DEFAULT_WORK_DURATION,
@@ -31,6 +32,7 @@ import {
     FOCUS_BEEP_TIMINGS,
     FOCUS_START_EFFECT_BEEP_DURATION,
 } from '../utils/constants';
+// Make sure the path to formatters is correct
 import { formatTime } from '../utils/formatters';
 
 // --- Constants for Timer Logic ---
@@ -63,7 +65,9 @@ interface PomodoroContextType {
     clearHistory: () => void;
     openSettingsModal: () => void;
     closeSettingsModal: () => void;
-    playSound: (soundName: SoundName) => void;
+    playSound: (soundName: SoundName) => void; // Keep regular playSound
+    playAlarmLoop: () => void; // Function to start alarm loop
+    stopAlarmLoop: () => void; // Function to stop alarm loop
     debouncedPlayTypingSound: () => void;
     updateLastHistoryFeedback: () => void;
     adjustTimeLeft: (newSeconds: number) => void;
@@ -112,7 +116,8 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const nextPhaseTriggeredRef = useRef<boolean>(false); // Prevents double phase change triggers
 
     // --- Hooks ---
-    const { playSound, debouncedPlayTypingSound } = useSounds(soundEnabled);
+    // Get sound functions including loop handlers
+    const { playSound, debouncedPlayTypingSound, playAlarmLoop, stopAlarmLoop } = useSounds(soundEnabled);
 
     // --- Derived State ---
     const isEffectRunning = focusStartEffectTimeouts.current.length > 0;
@@ -190,19 +195,34 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
 
 
     // --- Phase Logic ---
-    // Must be defined before useEffect that uses it. Ensure dependencies are complete.
+    // Defined before useEffect that uses it. Ensure all dependencies are listed.
     const handleNextPhase = useCallback((timerFinished: boolean) => {
-        if (nextPhaseTriggeredRef.current) return; // Prevent double trigger
+        if (nextPhaseTriggeredRef.current) {
+            console.log("handleNextPhase blocked, already triggered.");
+            return;
+        }
+        console.log(`handleNextPhase called. timerFinished: ${timerFinished}`);
         nextPhaseTriggeredRef.current = true;
 
         clearFocusStartEffect();
-        setIsRunning(false); // Stop timer state
+        setIsRunning(false); // Stop timer state FIRST
         timerDeadlineRef.current = null; // Clear deadline
 
-        if (timerFinished) { playSound('alarm'); }
+        // Stop any currently looping alarm immediately when phase changes
+        stopAlarmLoop();
 
+        if (timerFinished) {
+            // Check visibility *after* stopping any previous loop
+            if (document.hidden) {
+                console.log("Timer finished while hidden, starting alarm loop.");
+                playAlarmLoop(); // Start looping if tab is hidden
+            } else {
+                console.log("Timer finished while visible, playing alarm once.");
+                playSound('alarm'); // Play once if tab is visible
+            }
+        }
+        // Determine next phase logic...
         let nextPhase: Phase; let nextDuration: number; let nextCycleCount = cycleCount;
-
         if (currentPhase === 'Work') {
             saveFocusToHistory();
             setCurrentFocusPoints('');
@@ -216,135 +236,146 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             nextPhase = 'Work'; nextDuration = workDuration;
         }
 
+        // Update state for the new phase
         setCurrentPhase(nextPhase);
         setTimeLeft(nextDuration);
         setInitialDuration(nextDuration);
 
-        // Reset trigger flag after state updates likely processed
+        // Reset trigger flag after a short delay to allow state updates
         setTimeout(() => { nextPhaseTriggeredRef.current = false; }, 100);
 
-    }, [ // Ensure ALL dependencies are listed
+    }, [ // Ensure ALL dependencies are listed correctly
         currentPhase, cycleCount, saveFocusToHistory, workDuration, shortBreakDuration, longBreakDuration,
-        cyclesBeforeLongBreak, playSound, clearFocusStartEffect, history, currentFeedbackNotes,
-        updateLastHistoryFeedback, setHistory, setCurrentFocusPoints, setCurrentFeedbackNotes,
-        setCycleCount, setCurrentPhase, setTimeLeft, setInitialDuration, setCurrentSessionStartTime, setIsRunning // Include setters
+        cyclesBeforeLongBreak, playSound, playAlarmLoop, stopAlarmLoop,
+        clearFocusStartEffect, history, currentFeedbackNotes, updateLastHistoryFeedback,
+        setHistory, setCurrentFocusPoints, setCurrentFeedbackNotes, setCycleCount, setCurrentPhase,
+        setTimeLeft, setInitialDuration, setCurrentSessionStartTime, setIsRunning
     ]);
 
     // --- Timer Interval Effect (Deadline-based) ---
     useEffect(() => {
         const tick = () => {
-            if (!timerDeadlineRef.current || !isRunning) return; // Check isRunning state too
+            // Check if timer should be running and if a deadline exists
+            if (!timerDeadlineRef.current || !isRunning) return;
 
             const now = Date.now();
             const remainingMs = timerDeadlineRef.current - now;
             const newTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
 
-            // Update timeLeft state ONLY if it changed
+            // Update timeLeft state only if the value actually changes
             setTimeLeft(currentTime => (currentTime !== newTimeLeft ? newTimeLeft : currentTime));
 
-            // Check if timer reached zero
+            // Check if timer reached zero and hasn't been triggered yet
             if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
+                 console.log("Timer reached zero in tick.");
                  if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
                  handleNextPhase(true); // Timer finished naturally
              }
         };
 
         if (isRunning) {
-            // Ensure deadline is set if somehow missing (e.g., after pause/resume)
+            // Ensure deadline is set if missing (e.g., after pause/resume)
              if (!timerDeadlineRef.current) {
                  console.warn("Timer running but deadline missing. Setting based on timeLeft.");
                  timerDeadlineRef.current = Date.now() + timeLeft * 1000;
              }
-             // Clear any existing interval
+            // Clear previous interval, run tick immediately, set new interval
             if (intervalRef.current) clearInterval(intervalRef.current);
-            // Run tick immediately for instant UI update
             tick();
-            // Set up new interval for periodic UI updates
             intervalRef.current = setInterval(tick, TIMER_UI_UPDATE_INTERVAL_MS);
             nextPhaseTriggeredRef.current = false; // Reset trigger flag when timer starts/resumes
+            stopAlarmLoop(); // Stop any looping alarm when timer restarts/resumes
         } else {
             // Clear interval if timer is stopped
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-            // Deadline is kept if paused, cleared if reset/skipped (in those functions)
+            // timerDeadlineRef is kept if paused, cleared if reset/skipped
         }
 
-        // Cleanup
+        // Cleanup function to clear interval on unmount or when isRunning changes
         return () => {
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
         };
-        // handleNextPhase is stable; timeLeft included for initial deadline calculation if missing
-    }, [isRunning, timeLeft, handleNextPhase]);
-
+        // Ensure handleNextPhase and stopAlarmLoop are stable callbacks
+    }, [isRunning, timeLeft, handleNextPhase, stopAlarmLoop]);
 
      // --- Visibility Change Effect ---
      useEffect(() => {
         const handleVisibilityChange = () => {
-            // Check visibility, if timer should be running, and if a deadline exists
-            if (document.visibilityState === 'visible' && isRunning && timerDeadlineRef.current) {
-                 const now = Date.now();
-                 const remainingMs = timerDeadlineRef.current - now;
-                 const correctedTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
+            if (document.visibilityState === 'visible') {
+                console.log("Tab became visible.");
+                // Stop any looping alarm immediately when tab becomes visible
+                stopAlarmLoop();
 
-                 // Correct the state immediately if needed
-                 setTimeLeft(currentTime => {
-                    if (currentTime !== correctedTimeLeft) {
-                        console.log(`Timer corrected on visibility change from ${currentTime} to ${correctedTimeLeft}`);
-                        return correctedTimeLeft;
+                // If the timer should be running and has a deadline, check for corrections
+                if (isRunning && timerDeadlineRef.current) {
+                    const now = Date.now();
+                    const remainingMs = timerDeadlineRef.current - now;
+                    const correctedTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
+
+                    // Correct the displayed time immediately if it drifted
+                    setTimeLeft(currentTime => {
+                       if (currentTime !== correctedTimeLeft) {
+                           console.log(`Timer corrected on visibility change from ${currentTime} to ${correctedTimeLeft}`);
+                           return correctedTimeLeft;
+                       }
+                       return currentTime;
+                     });
+
+                    // Check if timer should have finished while hidden *after* correcting state
+                    // and if the next phase hasn't already been triggered
+                    if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
+                        console.log("Timer finished while tab was hidden. Triggering next phase on visibility.");
+                        if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+                        handleNextPhase(true); // Trigger the missed phase transition
                     }
-                    return currentTime;
-                  });
-
-                 // Check if the timer should have finished while hidden
-                 if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
-                     console.log("Timer finished while tab was hidden. Triggering next phase.");
-                     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-                     handleNextPhase(true);
-                 }
-             }
+                }
+            } else {
+                 console.log("Tab became hidden.");
+                 // Don't start looping alarm here, only when timer *finishes* while hidden
+            }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
+        // Cleanup listener on unmount
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-        // handleNextPhase is stable due to useCallback
-     }, [isRunning, handleNextPhase]);
+        // Ensure handleNextPhase and stopAlarmLoop are stable callbacks
+     }, [isRunning, handleNextPhase, stopAlarmLoop]);
 
-     useEffect(() => {
+    // --- Document Title Effect ---
+    useEffect(() => {
         const baseTitle = "PomoHero";
         if (isRunning) {
             document.title = `${formatTime(timeLeft)} - ${baseTitle}`;
         } else {
             document.title = baseTitle;
+            // Optional: Could add logic here to flash title if alarm is looping, but complex.
         }
-
-        return () => {
-            document.title = baseTitle;
-        };
+        // No cleanup needed unless component unmounts, which resets title anyway.
     }, [isRunning, timeLeft]);
 
 
      // --- Control Handlers ---
     const startPauseTimer = useCallback(() => {
+        stopAlarmLoop(); // Stop alarm loop on any interaction
         playSound('buttonPress');
         const effectIsCurrentlyActive = focusStartEffectTimeouts.current.length > 0;
 
         if (!isRunning && !effectIsCurrentlyActive) { // ---> STARTING
             // Pre-start checks...
-            if (currentPhase === 'Work' && currentFocusPoints.trim() === '') { alert('...'); return; }
+            if (currentPhase === 'Work' && currentFocusPoints.trim() === '') { alert('Por favor, defina seus pontos de foco.'); return; }
             const requiresFeedback = (currentPhase === 'Short Break' || currentPhase === 'Long Break') && history.length > 0 && history[0]?.feedbackNotes === '';
-            if (requiresFeedback && currentFeedbackNotes.trim() === '') { alert('...'); return; }
+            if (requiresFeedback && currentFeedbackNotes.trim() === '') { alert('Por favor, adicione seu feedback.'); return; }
             else if (requiresFeedback && currentFeedbackNotes.trim() !== '') { updateLastHistoryFeedback(); }
 
-            // Set initialDuration for display/saving, calculate and set the DEADLINE
             setInitialDuration(timeLeft);
-            timerDeadlineRef.current = Date.now() + timeLeft * 1000;
-            nextPhaseTriggeredRef.current = false;
+            timerDeadlineRef.current = Date.now() + timeLeft * 1000; // Set deadline NOW
+            nextPhaseTriggeredRef.current = false; // Reset flag
 
             if (currentPhase === 'Work') {
                 setCurrentSessionStartTime(Date.now()); // Capture start time NOW
                 playSound('focusStart');
                 setActiveBgColorOverride(null); clearFocusStartEffect();
-
-                // Start Focus Effect (simplified logic)
+                // Focus Effect logic...
                 const flashColor = EFFECT_FLASH_COLOR_1; const pausedBaseColor = WORK_BG_PAUSED; const runningColor = WORK_BG_RUNNING;
                 const effectTimeouts: NodeJS.Timeout[] = [];
                 FOCUS_BEEP_TIMINGS.forEach((timing, index) => {
@@ -360,7 +391,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
                 focusStartEffectTimeouts.current = effectTimeouts;
 
             } else { // Starting a break
-                 setIsRunning(true); // Directly trigger timer effect
+                 setIsRunning(true); // Trigger timer effect directly
             }
 
         } else if (isRunning || effectIsCurrentlyActive) { // ---> PAUSING
@@ -368,18 +399,19 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             setIsRunning(false); // Stops timer effect, keeps deadline
         }
     }, [ // Ensure all dependencies are listed
-        isRunning, currentPhase, currentFocusPoints, currentFeedbackNotes, history, timeLeft,
+        stopAlarmLoop, isRunning, currentPhase, currentFocusPoints, currentFeedbackNotes, history, timeLeft,
         playSound, clearFocusStartEffect, updateLastHistoryFeedback, setInitialDuration,
-        setCurrentSessionStartTime, setActiveBgColorOverride, setIsRunning, settings // Include settings if used by updateLastHistoryFeedback
+        setCurrentSessionStartTime, setActiveBgColorOverride, setIsRunning, settings
     ]);
 
     const resetTimer = useCallback(() => {
+        stopAlarmLoop(); // Stop alarm loop on reset
         playSound('buttonPress');
         clearFocusStartEffect();
         setIsRunning(false);
         setCurrentSessionStartTime(null);
         timerDeadlineRef.current = null; // Clear deadline
-        nextPhaseTriggeredRef.current = false;
+        nextPhaseTriggeredRef.current = false; // Reset flag
 
         let duration: number;
         switch (currentPhase) {
@@ -391,37 +423,52 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         setTimeLeft(duration);
         setInitialDuration(duration);
         if (currentPhase === 'Work') { setCurrentFocusPoints(''); }
-    }, [
-        playSound, clearFocusStartEffect, currentPhase, workDuration, shortBreakDuration, longBreakDuration,
-        setCurrentSessionStartTime, setIsRunning, setTimeLeft, setInitialDuration, setCurrentFocusPoints // Include setters
+    }, [ // Ensure all dependencies are listed
+        stopAlarmLoop, playSound, clearFocusStartEffect, currentPhase, workDuration, shortBreakDuration, longBreakDuration,
+        setCurrentSessionStartTime, setIsRunning, setTimeLeft, setInitialDuration, setCurrentFocusPoints
     ]);
 
     const skipPhase = useCallback(() => {
+        stopAlarmLoop(); // Stop alarm loop on skip
         playSound('buttonPress');
         clearFocusStartEffect();
 
         // Feedback check...
-        if ((currentPhase === 'Short Break' || currentPhase === 'Long Break')) { /* ... */ }
+        if ((currentPhase === 'Short Break' || currentPhase === 'Long Break')) {
+             const requiresFeedback = history.length > 0 && history[0]?.feedbackNotes === '';
+             if (requiresFeedback && currentFeedbackNotes.trim() === '') {
+                alert('Por favor, adicione seu feedback da sessão de foco anterior antes de pular a pausa.');
+                return;
+            }
+        }
 
-        // Clear deadline before triggering next phase
-        timerDeadlineRef.current = null;
-        nextPhaseTriggeredRef.current = false;
+        timerDeadlineRef.current = null; // Clear deadline before triggering next phase
+        nextPhaseTriggeredRef.current = false; // Reset flag
 
-        handleNextPhase(false);
+        handleNextPhase(false); // Trigger phase change
 
-    }, [ playSound, clearFocusStartEffect, currentPhase, handleNextPhase, history, currentFeedbackNotes ]);
+    }, [ stopAlarmLoop, playSound, clearFocusStartEffect, currentPhase, handleNextPhase, history, currentFeedbackNotes ]);
 
     const clearHistory = useCallback(() => {
+        // No need to stop loop here unless clearHistory also stops the timer
         playSound('buttonPress');
         if (window.confirm("Tem certeza que deseja limpar todo o histórico de foco?")) {
             setHistory([]); alert("Histórico limpo.");
         }
      }, [playSound, setHistory]);
 
-    const openSettingsModal = useCallback(() => { playSound('click'); setIsSettingsOpen(true); }, [playSound, setIsSettingsOpen]);
-    const closeSettingsModal = useCallback(() => { playSound('click'); setIsSettingsOpen(false); }, [playSound, setIsSettingsOpen]);
+    const openSettingsModal = useCallback(() => {
+        // No need to stop loop unless opening settings pauses the timer
+        playSound('click'); setIsSettingsOpen(true);
+    }, [playSound, setIsSettingsOpen]);
+
+    const closeSettingsModal = useCallback(() => {
+         // No need to stop loop
+        playSound('click'); setIsSettingsOpen(false);
+    }, [playSound, setIsSettingsOpen]);
 
     const handleSettingChange = useCallback((settingKey: keyof PomodoroSettings, value: number | boolean) => {
+         // No need to stop loop, settings only affect paused state or next cycle
          if (typeof value === 'boolean') { playSound('click'); }
          setSettings(prevSettings => {
              const newSettings = { ...prevSettings, [settingKey]: value };
@@ -439,22 +486,21 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
      }, [playSound, setSettings, isRunning, isEffectRunning, currentPhase, initialDuration, timeLeft, setTimeLeft, setInitialDuration]);
 
     const adjustTimeLeft = useCallback((newSeconds: number) => {
+         // No need to stop loop, only works when paused
         if (currentPhase === 'Work' && !isRunning && !isEffectRunning) {
             const validatedSeconds = Math.max(0, Math.min(newSeconds, 99 * 60 + 59));
             if (validatedSeconds !== timeLeft) {
                  setTimeLeft(validatedSeconds);
                  playSound('click');
-                 // No deadline update needed here, it happens on resume
             }
         }
      }, [currentPhase, isRunning, isEffectRunning, playSound, timeLeft, setTimeLeft]);
 
 
-    // --- Dynamic Styling Calculation ---
+    // --- Dynamic Styling Calculation --- (remains the same)
     const styles = useMemo((): DynamicStyles => {
-        let baseBg: string;
-        let txt = 'text-gray-200', prog = 'bg-red-500', btn = 'bg-white/10 hover:bg-white/20 text-gray-200', btnAct = 'bg-white/25 text-white', inputBg = 'bg-black/30 placeholder-gray-500 focus:ring-red-500', histBorder = 'border-red-600/50', phase = "Foco", modalAcc = 'ring-red-500';
-
+        let baseBg: string; let txt = '', prog = '', btn = '', btnAct = '', inputBg = '', histBorder = '', phase = '', modalAcc = '';
+        // Logic to determine styles based on currentPhase, isRunning, activeBgColorOverride...
         if (currentPhase === 'Work') {
             baseBg = isRunning ? WORK_BG_RUNNING : WORK_BG_PAUSED;
             txt = 'text-slate-100'; prog = 'bg-slate-400'; btn = 'bg-white/10 hover:bg-white/20 text-slate-100'; btnAct = 'bg-white/25 text-white'; inputBg = 'bg-black/30 placeholder-slate-400/70 focus:ring-slate-400'; phase = "Foco"; modalAcc = 'ring-slate-500';
@@ -466,10 +512,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             baseBg = isRunning ? LONG_BREAK_BG_RUNNING : LONG_BREAK_BG_PAUSED;
             txt = 'text-teal-100'; prog = 'bg-teal-500'; btn = 'bg-white/10 hover:bg-white/20 text-teal-100'; btnAct = 'bg-white/25 text-white'; inputBg = 'bg-black/30 placeholder-teal-600/70 focus:ring-teal-500'; histBorder = 'border-teal-600/50'; phase = "Pausa Longa"; modalAcc = 'ring-teal-500';
         }
-
-        let finalBg = baseBg;
-        let finalHistBorder = histBorder;
-
+        let finalBg = baseBg; let finalHistBorder = histBorder;
         if (activeBgColorOverride) {
             finalBg = activeBgColorOverride;
              if (currentPhase === 'Work') {
@@ -478,11 +521,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
                 else if (activeBgColorOverride === WORK_BG_RUNNING) finalHistBorder = 'border-purple-600/50';
              }
         }
-
-        return {
-            baseBgColor: baseBg, finalHistoryBorderColor: finalHistBorder, textColor: txt, progressColor: prog, buttonColor: btn,
-            buttonActiveColor: btnAct, inputBgColor: inputBg, phaseText: phase, modalAccentColor: modalAcc, finalBgColor: finalBg,
-        };
+        return { baseBgColor: baseBg, finalHistoryBorderColor: finalHistBorder, textColor: txt, progressColor: prog, buttonColor: btn, buttonActiveColor: btnAct, inputBgColor: inputBg, phaseText: phase, modalAccentColor: modalAcc, finalBgColor: finalBg, };
     }, [currentPhase, isRunning, activeBgColorOverride]);
 
 
@@ -492,6 +531,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         currentFeedbackNotes, history, isSettingsOpen, isEffectRunning, styles,
         setSettings, handleSettingChange, setCurrentFocusPoints, setCurrentFeedbackNotes, startPauseTimer,
         resetTimer, skipPhase, clearHistory, openSettingsModal, closeSettingsModal, playSound,
+        playAlarmLoop, stopAlarmLoop, // Expose loop control functions
         debouncedPlayTypingSound, updateLastHistoryFeedback, adjustTimeLeft, updateHistoryEntry, deleteHistoryEntry, addManualHistoryEntry,
     };
 
