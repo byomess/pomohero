@@ -9,7 +9,7 @@ const soundMap = {
     buttonPress: new Howl({ src: ['/sounds/small_beep.ogg', '/sounds/small_beep.wav'], volume: 0.7 }),
     typing: new Howl({ src: ['/sounds/typing.wav', '/sounds/typing.mp3'], volume: 0.4 }),
     alarm: new Howl({ src: ['/sounds/alarm_1.ogg', '/sounds/alarm_1.wav'], volume: 0.8 }),
-    focusStart: new Howl({ src: ['/sounds/focus_start.ogg', '/sounds/focus_start.wav'], volume: 0.8 }),
+    focusStart: new Howl({ src: ['/sounds/focus_start.ogg', '/sounds/focus_start.wav'], volume: 0.7 }),
 };
 
 export type SoundName = keyof typeof soundMap;

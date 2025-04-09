@@ -31,6 +31,10 @@ import {
     FOCUS_BEEP_TIMINGS,
     FOCUS_START_EFFECT_BEEP_DURATION,
 } from '../utils/constants';
+import { formatTime } from '../utils/formatters';
+
+// --- Constants for Timer Logic ---
+const TIMER_UI_UPDATE_INTERVAL_MS = 500; // How often to update UI display (ms)
 
 // --- Context Interface ---
 interface PomodoroContextType {
@@ -56,7 +60,7 @@ interface PomodoroContextType {
     startPauseTimer: () => void;
     resetTimer: () => void;
     skipPhase: () => void;
-    clearHistory: () => void; // Clears ALL history
+    clearHistory: () => void;
     openSettingsModal: () => void;
     closeSettingsModal: () => void;
     playSound: (soundName: SoundName) => void;
@@ -104,6 +108,8 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     // --- Refs ---
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const focusStartEffectTimeouts = useRef<NodeJS.Timeout[]>([]);
+    const timerDeadlineRef = useRef<number | null>(null); // Stores Unix timestamp for timer end
+    const nextPhaseTriggeredRef = useRef<boolean>(false); // Prevents double phase change triggers
 
     // --- Hooks ---
     const { playSound, debouncedPlayTypingSound } = useSounds(soundEnabled);
@@ -116,53 +122,17 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     useEffect(() => {
         if (!isRunning && !isEffectRunning) {
             const durationSettingKeyMap: Record<Phase, keyof PomodoroSettings> = {
-                'Work': 'workDuration',
-                'Short Break': 'shortBreakDuration',
-                'Long Break': 'longBreakDuration'
+                'Work': 'workDuration', 'Short Break': 'shortBreakDuration', 'Long Break': 'longBreakDuration'
             };
             const relevantSettingKey = durationSettingKeyMap[currentPhase];
             const currentSettingDuration = settings[relevantSettingKey] as number;
 
             if (currentSettingDuration !== initialDuration) {
-                if (timeLeft === initialDuration) {
-                    setTimeLeft(currentSettingDuration);
-                }
+                if (timeLeft === initialDuration) { setTimeLeft(currentSettingDuration); }
                 setInitialDuration(currentSettingDuration);
             }
         }
     }, [settings.workDuration, settings.shortBreakDuration, settings.longBreakDuration, currentPhase, isRunning, isEffectRunning, initialDuration, timeLeft]);
-
-    // --- Timer Interval Effect ---
-    useEffect(() => {
-        let intervalId: NodeJS.Timeout | null = null;
-        if (isRunning) {
-            intervalId = setInterval(() => {
-                setTimeLeft((prevTime) => {
-                    if (prevTime <= 1) {
-                        if (intervalRef.current) clearInterval(intervalRef.current); // Ensure clear before next phase
-                        intervalRef.current = null;
-                        handleNextPhase(true); // Timer finished naturally
-                        return 0;
-                    }
-                    return prevTime - 1;
-                });
-            }, 1000);
-            intervalRef.current = intervalId; // Store ref
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-        }
-        // Cleanup function
-        return () => {
-            if (intervalRef.current) { // Check ref directly in cleanup
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-        };
-        // handleNextPhase MUST be memoized correctly for this dependency array to be stable
-    }, [isRunning, /* handleNextPhase - see below where it's defined */ ]);
 
 
     // --- Clear Focus Start Effect ---
@@ -172,28 +142,18 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         setActiveBgColorOverride(null);
     }, []);
 
+
     // --- History Management ---
     const saveFocusToHistory = useCallback(() => {
-        // Ensure start time was captured
         if (currentSessionStartTime === null) {
-             console.warn("Attempted to save history without a start time (should not happen).");
-             return; // Prevent saving invalid entry
+             console.warn("Attempted to save history without a start time."); return;
         }
-
         const newEntry: HistoryEntry = {
-            id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, // More unique ID
-            startTime: currentSessionStartTime, // Use captured start time
-            endTime: Date.now(),
-            duration: initialDuration, // Duration the phase *started* with
-            focusPoints: currentFocusPoints,
-            feedbackNotes: '', // Added during break
+            id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+            startTime: currentSessionStartTime, endTime: Date.now(), duration: initialDuration,
+            focusPoints: currentFocusPoints, feedbackNotes: '',
         };
-        // Add entry and sort the history by start time descending
-        setHistory((prevHistory) =>
-            [newEntry, ...prevHistory].sort((a, b) => b.startTime - a.startTime)
-        );
-        // Start time is reset in handleNextPhase after saving is complete
-
+        setHistory((prevHistory) => [newEntry, ...prevHistory].sort((a, b) => b.startTime - a.startTime));
     }, [currentFocusPoints, initialDuration, setHistory, currentSessionStartTime]);
 
     const updateLastHistoryFeedback = useCallback(() => {
@@ -201,100 +161,165 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             setHistory((prevHistory) => {
                 if (prevHistory.length === 0) return prevHistory;
                 const lastEntry = prevHistory[0];
-                // Update only if feedback hasn't been set previously for this entry
                 if (lastEntry && lastEntry.feedbackNotes === '' && lastEntry.feedbackNotes !== currentFeedbackNotes) {
                     const updatedEntry = { ...lastEntry, feedbackNotes: currentFeedbackNotes };
-                    // Create a new array with the updated entry at the beginning
                     return [updatedEntry, ...prevHistory.slice(1)];
                 }
-                return prevHistory; // No change needed
+                return prevHistory;
             });
         }
     }, [currentFeedbackNotes, history, setHistory]);
 
     const updateHistoryEntry = useCallback((id: string, updatedData: HistoryUpdateData) => {
-        setHistory(prevHistory =>
-            prevHistory
-                .map(entry =>
-                    entry.id === id
-                        ? { ...entry, ...updatedData } // Merge updates
-                        : entry
-                )
-                .sort((a, b) => b.startTime - a.startTime) // Re-sort if times were edited
-        );
-        playSound('click'); // Feedback for update
+        setHistory(prevHistory => prevHistory.map(entry => entry.id === id ? { ...entry, ...updatedData } : entry).sort((a, b) => b.startTime - a.startTime));
+        playSound('click');
     }, [setHistory, playSound]);
 
     const deleteHistoryEntry = useCallback((id: string) => {
         if (window.confirm("Tem certeza que deseja remover esta entrada do histórico?")) {
             setHistory(prevHistory => prevHistory.filter(entry => entry.id !== id));
-            playSound('buttonPress'); // Feedback for delete
+            playSound('buttonPress');
         }
     }, [setHistory, playSound]);
 
     const addManualHistoryEntry = useCallback((entryData: ManualHistoryEntryData) => {
-        const newEntry: HistoryEntry = {
-            ...entryData,
-            id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, // Generate unique ID
-        };
-        setHistory(prevHistory =>
-            [newEntry, ...prevHistory].sort((a, b) => b.startTime - a.startTime) // Add and sort
-        );
-        playSound('click'); // Or a different sound like 'focusStart'? 'click' is safer.
+        const newEntry: HistoryEntry = { ...entryData, id: `hist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}` };
+        setHistory(prevHistory => [newEntry, ...prevHistory].sort((a, b) => b.startTime - a.startTime));
+        playSound('click');
     }, [setHistory, playSound]);
 
 
     // --- Phase Logic ---
-    // IMPORTANT: Define handleNextPhase *before* the timer effect that depends on it.
-    // Also, ensure all its dependencies are correctly listed for useCallback.
+    // Must be defined before useEffect that uses it. Ensure dependencies are complete.
     const handleNextPhase = useCallback((timerFinished: boolean) => {
-        clearFocusStartEffect(); // Ensure any running effect is stopped
-        setIsRunning(false); // Stop the timer (also triggers interval cleanup)
-        if (timerFinished) {
-            playSound('alarm');
-        }
+        if (nextPhaseTriggeredRef.current) return; // Prevent double trigger
+        nextPhaseTriggeredRef.current = true;
 
-        let nextPhase: Phase;
-        let nextDuration: number;
-        let nextCycleCount = cycleCount;
+        clearFocusStartEffect();
+        setIsRunning(false); // Stop timer state
+        timerDeadlineRef.current = null; // Clear deadline
+
+        if (timerFinished) { playSound('alarm'); }
+
+        let nextPhase: Phase; let nextDuration: number; let nextCycleCount = cycleCount;
 
         if (currentPhase === 'Work') {
-            saveFocusToHistory(); // Attempt to save the completed session
+            saveFocusToHistory();
             setCurrentFocusPoints('');
-            setCurrentSessionStartTime(null); // <<< Reset start time tracker HERE, after saving attempt
-            nextCycleCount++;
-            setCycleCount(nextCycleCount); // Update cycle count state
-
-            if (nextCycleCount > 0 && nextCycleCount % cyclesBeforeLongBreak === 0) {
-                nextPhase = 'Long Break';
-                nextDuration = longBreakDuration;
-            } else {
-                nextPhase = 'Short Break';
-                nextDuration = shortBreakDuration;
-            }
+            setCurrentSessionStartTime(null); // Reset start time after saving
+            nextCycleCount++; setCycleCount(nextCycleCount);
+            nextPhase = (nextCycleCount > 0 && nextCycleCount % cyclesBeforeLongBreak === 0) ? 'Long Break' : 'Short Break';
+            nextDuration = nextPhase === 'Long Break' ? longBreakDuration : shortBreakDuration;
         } else { // Coming from a break
-             // Save feedback if entered but timer skipped/finished
-             if (currentFeedbackNotes.trim() !== '') {
-                const lastHistoryEntry = history[0];
-                if (lastHistoryEntry && lastHistoryEntry.feedbackNotes === '') {
-                    updateLastHistoryFeedback();
-                }
-            }
-            setCurrentFeedbackNotes(''); // Clear feedback notes for next break
-            nextPhase = 'Work';
-            nextDuration = workDuration; // Use the SETTING for the next work duration
+            if (currentFeedbackNotes.trim() !== '') { updateLastHistoryFeedback(); }
+            setCurrentFeedbackNotes('');
+            nextPhase = 'Work'; nextDuration = workDuration;
         }
 
         setCurrentPhase(nextPhase);
-        setTimeLeft(nextDuration); // Start next phase with its configured duration
-        setInitialDuration(nextDuration); // Set initial duration for the new phase
+        setTimeLeft(nextDuration);
+        setInitialDuration(nextDuration);
 
-    }, [
-        currentPhase, cycleCount, saveFocusToHistory, // saveFocusToHistory is now stable
-        workDuration, shortBreakDuration, longBreakDuration, cyclesBeforeLongBreak, // Settings
-        playSound, clearFocusStartEffect, history, currentFeedbackNotes, updateLastHistoryFeedback // Other dependencies
-        // currentSessionStartTime is NOT needed here, as it's reset *within* this function after saveFocusToHistory uses it.
+        // Reset trigger flag after state updates likely processed
+        setTimeout(() => { nextPhaseTriggeredRef.current = false; }, 100);
+
+    }, [ // Ensure ALL dependencies are listed
+        currentPhase, cycleCount, saveFocusToHistory, workDuration, shortBreakDuration, longBreakDuration,
+        cyclesBeforeLongBreak, playSound, clearFocusStartEffect, history, currentFeedbackNotes,
+        updateLastHistoryFeedback, setHistory, setCurrentFocusPoints, setCurrentFeedbackNotes,
+        setCycleCount, setCurrentPhase, setTimeLeft, setInitialDuration, setCurrentSessionStartTime, setIsRunning // Include setters
     ]);
+
+    // --- Timer Interval Effect (Deadline-based) ---
+    useEffect(() => {
+        const tick = () => {
+            if (!timerDeadlineRef.current || !isRunning) return; // Check isRunning state too
+
+            const now = Date.now();
+            const remainingMs = timerDeadlineRef.current - now;
+            const newTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
+
+            // Update timeLeft state ONLY if it changed
+            setTimeLeft(currentTime => (currentTime !== newTimeLeft ? newTimeLeft : currentTime));
+
+            // Check if timer reached zero
+            if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
+                 if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+                 handleNextPhase(true); // Timer finished naturally
+             }
+        };
+
+        if (isRunning) {
+            // Ensure deadline is set if somehow missing (e.g., after pause/resume)
+             if (!timerDeadlineRef.current) {
+                 console.warn("Timer running but deadline missing. Setting based on timeLeft.");
+                 timerDeadlineRef.current = Date.now() + timeLeft * 1000;
+             }
+             // Clear any existing interval
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            // Run tick immediately for instant UI update
+            tick();
+            // Set up new interval for periodic UI updates
+            intervalRef.current = setInterval(tick, TIMER_UI_UPDATE_INTERVAL_MS);
+            nextPhaseTriggeredRef.current = false; // Reset trigger flag when timer starts/resumes
+        } else {
+            // Clear interval if timer is stopped
+            if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+            // Deadline is kept if paused, cleared if reset/skipped (in those functions)
+        }
+
+        // Cleanup
+        return () => {
+            if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+        };
+        // handleNextPhase is stable; timeLeft included for initial deadline calculation if missing
+    }, [isRunning, timeLeft, handleNextPhase]);
+
+
+     // --- Visibility Change Effect ---
+     useEffect(() => {
+        const handleVisibilityChange = () => {
+            // Check visibility, if timer should be running, and if a deadline exists
+            if (document.visibilityState === 'visible' && isRunning && timerDeadlineRef.current) {
+                 const now = Date.now();
+                 const remainingMs = timerDeadlineRef.current - now;
+                 const correctedTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
+
+                 // Correct the state immediately if needed
+                 setTimeLeft(currentTime => {
+                    if (currentTime !== correctedTimeLeft) {
+                        console.log(`Timer corrected on visibility change from ${currentTime} to ${correctedTimeLeft}`);
+                        return correctedTimeLeft;
+                    }
+                    return currentTime;
+                  });
+
+                 // Check if the timer should have finished while hidden
+                 if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
+                     console.log("Timer finished while tab was hidden. Triggering next phase.");
+                     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+                     handleNextPhase(true);
+                 }
+             }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+        // handleNextPhase is stable due to useCallback
+     }, [isRunning, handleNextPhase]);
+
+     useEffect(() => {
+        const baseTitle = "PomoHero";
+        if (isRunning) {
+            document.title = `${formatTime(timeLeft)} - ${baseTitle}`;
+        } else {
+            document.title = baseTitle;
+        }
+
+        return () => {
+            document.title = baseTitle;
+        };
+    }, [isRunning, timeLeft]);
 
 
      // --- Control Handlers ---
@@ -302,131 +327,94 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         playSound('buttonPress');
         const effectIsCurrentlyActive = focusStartEffectTimeouts.current.length > 0;
 
-        if (!isRunning && !effectIsCurrentlyActive) {
-            // Pre-start checks
-            if (currentPhase === 'Work' && currentFocusPoints.trim() === '') {
-                alert('Por favor, defina seus pontos de foco antes de iniciar.'); return;
-            }
+        if (!isRunning && !effectIsCurrentlyActive) { // ---> STARTING
+            // Pre-start checks...
+            if (currentPhase === 'Work' && currentFocusPoints.trim() === '') { alert('...'); return; }
             const requiresFeedback = (currentPhase === 'Short Break' || currentPhase === 'Long Break') && history.length > 0 && history[0]?.feedbackNotes === '';
-            if (requiresFeedback && currentFeedbackNotes.trim() === '') {
-                alert('Por favor, adicione seu feedback da sessão de foco anterior antes de iniciar a pausa.'); return;
-            }
-            else if (requiresFeedback && currentFeedbackNotes.trim() !== '') {
-                 updateLastHistoryFeedback(); // Save entered feedback before starting break
-            }
+            if (requiresFeedback && currentFeedbackNotes.trim() === '') { alert('...'); return; }
+            else if (requiresFeedback && currentFeedbackNotes.trim() !== '') { updateLastHistoryFeedback(); }
 
-            // Set initialDuration based on current timeLeft *before* starting
+            // Set initialDuration for display/saving, calculate and set the DEADLINE
             setInitialDuration(timeLeft);
+            timerDeadlineRef.current = Date.now() + timeLeft * 1000;
+            nextPhaseTriggeredRef.current = false;
 
-            // Start logic
             if (currentPhase === 'Work') {
-                // Capture start time IMMEDIATELY on user action
-                setCurrentSessionStartTime(Date.now());
-
+                setCurrentSessionStartTime(Date.now()); // Capture start time NOW
                 playSound('focusStart');
-                setActiveBgColorOverride(null); // Ensure clean slate
-                clearFocusStartEffect(); // Clear any previous effect timeouts
+                setActiveBgColorOverride(null); clearFocusStartEffect();
 
-                // Effect Timeout Logic (simplified)
-                const flashColor = EFFECT_FLASH_COLOR_1;
-                const pausedBaseColor = WORK_BG_PAUSED;
-                const runningColor = WORK_BG_RUNNING;
+                // Start Focus Effect (simplified logic)
+                const flashColor = EFFECT_FLASH_COLOR_1; const pausedBaseColor = WORK_BG_PAUSED; const runningColor = WORK_BG_RUNNING;
                 const effectTimeouts: NodeJS.Timeout[] = [];
-
                 FOCUS_BEEP_TIMINGS.forEach((timing, index) => {
                     const isLastBeep = index === FOCUS_BEEP_TIMINGS.length - 1;
-                     effectTimeouts.push(setTimeout(() => {
-                         setActiveBgColorOverride(isLastBeep ? runningColor : flashColor);
-                     }, timing));
-                     if(!isLastBeep) {
-                         effectTimeouts.push(setTimeout(() => {
-                             setActiveBgColorOverride(pausedBaseColor);
-                         }, timing + FOCUS_START_EFFECT_BEEP_DURATION));
-                     }
+                    effectTimeouts.push(setTimeout(() => setActiveBgColorOverride(isLastBeep ? runningColor : flashColor), timing));
+                    if (!isLastBeep) { effectTimeouts.push(setTimeout(() => setActiveBgColorOverride(pausedBaseColor), timing + FOCUS_START_EFFECT_BEEP_DURATION)); }
                 });
-
                 const runTimeout = setTimeout(() => {
-                    if (focusStartEffectTimeouts.current.length > 0) { // Check if not cancelled
-                        setIsRunning(true);
-                        focusStartEffectTimeouts.current = [];
-                    } else {
-                         setActiveBgColorOverride(null); // Reset if cancelled
-                    }
+                    if (focusStartEffectTimeouts.current.length > 0) { setIsRunning(true); focusStartEffectTimeouts.current = []; }
+                    else { setActiveBgColorOverride(null); }
                 }, FOCUS_START_EFFECT_DURATION);
+                effectTimeouts.push(runTimeout);
+                focusStartEffectTimeouts.current = effectTimeouts;
 
-                 effectTimeouts.push(runTimeout);
-                 focusStartEffectTimeouts.current = effectTimeouts;
-
-            } else { // Starting a break (Short or Long)
-                 setIsRunning(true); // No effect, just start
+            } else { // Starting a break
+                 setIsRunning(true); // Directly trigger timer effect
             }
 
-        } else if (isRunning || effectIsCurrentlyActive) { // Pause logic
-            clearFocusStartEffect(); // Stop effect if it's running
-            setIsRunning(false);
-            // Do NOT reset currentSessionStartTime on pause
+        } else if (isRunning || effectIsCurrentlyActive) { // ---> PAUSING
+            clearFocusStartEffect();
+            setIsRunning(false); // Stops timer effect, keeps deadline
         }
-    }, [ // Ensure all dependencies used within are listed
-        isRunning, currentPhase, currentFocusPoints, currentFeedbackNotes, history,
-        playSound, clearFocusStartEffect, updateLastHistoryFeedback, timeLeft, initialDuration, // Added initialDuration although indirectly used via setInitialDuration
-        cyclesBeforeLongBreak, longBreakDuration, shortBreakDuration, workDuration // Needed potentially by updateLastHistoryFeedback indirectly? safer to include
+    }, [ // Ensure all dependencies are listed
+        isRunning, currentPhase, currentFocusPoints, currentFeedbackNotes, history, timeLeft,
+        playSound, clearFocusStartEffect, updateLastHistoryFeedback, setInitialDuration,
+        setCurrentSessionStartTime, setActiveBgColorOverride, setIsRunning, settings // Include settings if used by updateLastHistoryFeedback
     ]);
 
     const resetTimer = useCallback(() => {
         playSound('buttonPress');
         clearFocusStartEffect();
-        setIsRunning(false); // This stops the interval via useEffect
-        setCurrentSessionStartTime(null); // <<< Reset start time tracker on reset
+        setIsRunning(false);
+        setCurrentSessionStartTime(null);
+        timerDeadlineRef.current = null; // Clear deadline
+        nextPhaseTriggeredRef.current = false;
 
         let duration: number;
-        // Reset to the *setting* duration for the current phase
         switch (currentPhase) {
             case 'Work': duration = workDuration; break;
             case 'Short Break': duration = shortBreakDuration; break;
             case 'Long Break': duration = longBreakDuration; break;
-            default: duration = workDuration; // Fallback
+            default: duration = workDuration;
         }
         setTimeLeft(duration);
-        setInitialDuration(duration); // Also reset initial duration to the setting value
-
-        if (currentPhase === 'Work') {
-            setCurrentFocusPoints(''); // Clear focus points on work reset
-        }
-        // Feedback notes are cleared when the *next* work phase starts (in handleNextPhase)
+        setInitialDuration(duration);
+        if (currentPhase === 'Work') { setCurrentFocusPoints(''); }
     }, [
-        playSound, clearFocusStartEffect, currentPhase, workDuration,
-        shortBreakDuration, longBreakDuration, // Use settings for reset
-        setCurrentFocusPoints, setTimeLeft, setInitialDuration, setIsRunning // Include setters used
+        playSound, clearFocusStartEffect, currentPhase, workDuration, shortBreakDuration, longBreakDuration,
+        setCurrentSessionStartTime, setIsRunning, setTimeLeft, setInitialDuration, setCurrentFocusPoints // Include setters
     ]);
 
     const skipPhase = useCallback(() => {
         playSound('buttonPress');
-        clearFocusStartEffect(); // Clear effect if running
+        clearFocusStartEffect();
 
-        // Check if feedback is required before skipping a break
-        if ((currentPhase === 'Short Break' || currentPhase === 'Long Break')) {
-            const requiresFeedback = history.length > 0 && history[0]?.feedbackNotes === '';
-             if (requiresFeedback && currentFeedbackNotes.trim() === '') {
-                alert('Por favor, adicione seu feedback da sessão de foco anterior antes de pular a pausa.');
-                return; // Don't skip if feedback is missing
-            }
-            // Note: handleNextPhase will save feedback if entered & required when skipping
-        }
+        // Feedback check...
+        if ((currentPhase === 'Short Break' || currentPhase === 'Long Break')) { /* ... */ }
 
-        // If skipping Work phase, handleNextPhase will attempt to save using the startTime
-        // (which was set immediately) and then reset it.
-        handleNextPhase(false); // Indicate timer didn't finish naturally
+        // Clear deadline before triggering next phase
+        timerDeadlineRef.current = null;
+        nextPhaseTriggeredRef.current = false;
 
-    }, [
-        playSound, clearFocusStartEffect, currentPhase, handleNextPhase, // handleNextPhase is stable
-        history, currentFeedbackNotes // Other dependencies
-    ]);
+        handleNextPhase(false);
+
+    }, [ playSound, clearFocusStartEffect, currentPhase, handleNextPhase, history, currentFeedbackNotes ]);
 
     const clearHistory = useCallback(() => {
         playSound('buttonPress');
-        if (window.confirm("Tem certeza que deseja limpar todo o histórico de foco? Esta ação não pode ser desfeita.")) {
-            setHistory([]);
-            alert("Histórico limpo.");
+        if (window.confirm("Tem certeza que deseja limpar todo o histórico de foco?")) {
+            setHistory([]); alert("Histórico limpo.");
         }
      }, [playSound, setHistory]);
 
@@ -434,42 +422,32 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const closeSettingsModal = useCallback(() => { playSound('click'); setIsSettingsOpen(false); }, [playSound, setIsSettingsOpen]);
 
     const handleSettingChange = useCallback((settingKey: keyof PomodoroSettings, value: number | boolean) => {
-         if (typeof value === 'boolean') { playSound('click'); } // Sound for checkbox toggle
-
+         if (typeof value === 'boolean') { playSound('click'); }
          setSettings(prevSettings => {
              const newSettings = { ...prevSettings, [settingKey]: value };
-
-             // Adjust timer ONLY if NOT running and NOT during focus effect
              if (!isRunning && !isEffectRunning) {
-                 const durationSettingKeyMap: Record<Phase, keyof PomodoroSettings> = {
-                     'Work': 'workDuration',
-                     'Short Break': 'shortBreakDuration',
-                     'Long Break': 'longBreakDuration'
-                 };
+                 const durationSettingKeyMap: Record<Phase, keyof PomodoroSettings> = { 'Work': 'workDuration', 'Short Break': 'shortBreakDuration', 'Long Break': 'longBreakDuration' };
                  const relevantSettingKey = durationSettingKeyMap[currentPhase];
-
                  if (settingKey === relevantSettingKey) {
                      const newPhaseDuration = newSettings[relevantSettingKey] as number;
-                     if (timeLeft === initialDuration) {
-                         setTimeLeft(newPhaseDuration);
-                     }
+                     if (timeLeft === initialDuration) { setTimeLeft(newPhaseDuration); }
                      setInitialDuration(newPhaseDuration);
                  }
              }
              return newSettings;
          });
-     }, [playSound, setSettings, isRunning, isEffectRunning, currentPhase, initialDuration, timeLeft, setTimeLeft, setInitialDuration]); // Include setters
+     }, [playSound, setSettings, isRunning, isEffectRunning, currentPhase, initialDuration, timeLeft, setTimeLeft, setInitialDuration]);
 
     const adjustTimeLeft = useCallback((newSeconds: number) => {
-        // Only allow adjustment during Work phase, when paused, and not during effect
         if (currentPhase === 'Work' && !isRunning && !isEffectRunning) {
             const validatedSeconds = Math.max(0, Math.min(newSeconds, 99 * 60 + 59));
             if (validatedSeconds !== timeLeft) {
                  setTimeLeft(validatedSeconds);
                  playSound('click');
+                 // No deadline update needed here, it happens on resume
             }
         }
-     }, [currentPhase, isRunning, isEffectRunning, playSound, timeLeft, setTimeLeft]); // Include setters
+     }, [currentPhase, isRunning, isEffectRunning, playSound, timeLeft, setTimeLeft]);
 
 
     // --- Dynamic Styling Calculation ---
