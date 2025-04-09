@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #1e1e2f; /* Dark background */
+  color: #ffffff; /* Light text color */
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Apply to elements you want to style */
+.custom-scrollbar {
+  /* Firefox */
+  scrollbar-width: thin; /* Or 'auto' or 'none' */
+  scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.1); /* thumb track */
+}
+
+/* Webkit Browsers (Chrome, Safari, Edge, Opera) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;  /* Width of vertical scrollbar */
+  height: 8px; /* Height of horizontal scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1); /* Slightly darker transparent track */
+  border-radius: 10px; /* Rounded track */
+  margin-block: 2px; /* Optional: add a little space top/bottom */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.4); /* Semi-transparent white thumb */
+  border-radius: 10px; /* Rounded thumb */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.55); /* Slightly more opaque on hover */
+}
+
+/* Optional: Hide scrollbar buttons (arrows) for a cleaner look */
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Optional: Style the corner where vertical and horizontal scrollbars meet */
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent; /* Make the corner invisible */
+}
+
