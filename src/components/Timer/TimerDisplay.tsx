@@ -3,22 +3,14 @@ import React, { useState, useEffect, ChangeEvent, KeyboardEvent } from 'react';
 import { usePomodoro } from '../../contexts/PomodoroContext';
 import { formatTime } from '../../utils/formatters';
 
-// Helper to parse MM:SS string to seconds
 const parseTimeToSeconds = (timeString: string): number | null => {
-    if (!/^\d{1,2}:\d{1,2}$/.test(timeString)) {
-        // Basic format check (allows 1:5, 01:05, 10:30)
-        return null;
-    }
+    if (!/^\d{1,2}:\d{1,2}$/.test(timeString)) return null;
     const parts = timeString.split(':');
     const minutes = parseInt(parts[0], 10);
     const seconds = parseInt(parts[1], 10);
-
-    if (isNaN(minutes) || isNaN(seconds) || minutes < 0 || seconds < 0 || seconds > 59) {
-        return null; // Invalid numbers or seconds out of range
-    }
+    if (isNaN(minutes) || isNaN(seconds) || minutes < 0 || seconds < 0 || seconds > 59) return null;
     return minutes * 60 + seconds;
 };
-
 
 export const TimerDisplay: React.FC = () => {
     const { timeLeft, styles, adjustTimeLeft, isRunning, isEffectRunning, currentPhase } = usePomodoro();
@@ -27,58 +19,54 @@ export const TimerDisplay: React.FC = () => {
 
     const isEditable = currentPhase === 'Work' && !isRunning && !isEffectRunning;
 
-    // Update local input value when timeLeft changes externally (e.g., reset, +/- buttons)
-    // Only update if the input is NOT currently focused to avoid interrupting user typing
     useEffect(() => {
         if (!isFocused) {
             setInputValue(formatTime(timeLeft));
         }
-    }, [timeLeft, isFocused]); // Re-run if timeLeft changes OR focus state changes
+    }, [timeLeft, isFocused]);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
-        // Basic validation could happen here, but parsing is complex on every keystroke.
-        // We will parse on blur or Enter.
     };
 
     const handleInputBlur = () => {
          setIsFocused(false);
          const parsedSeconds = parseTimeToSeconds(inputValue);
          if (parsedSeconds !== null) {
-             adjustTimeLeft(parsedSeconds); // Update context state
-             // The useEffect will update inputValue back to formatted time if adjustTimeLeft was successful
+             adjustTimeLeft(parsedSeconds);
          } else {
-             // Invalid input, revert to the last valid time
              setInputValue(formatTime(timeLeft));
          }
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
-            event.preventDefault(); // Prevent form submission if applicable
+            event.preventDefault();
             const parsedSeconds = parseTimeToSeconds(inputValue);
             if (parsedSeconds !== null) {
                 adjustTimeLeft(parsedSeconds);
-                event.currentTarget.blur(); // Remove focus after Enter
+                event.currentTarget.blur();
             } else {
-                // Optionally provide feedback for invalid format
                 console.warn("Invalid time format entered:", inputValue);
-                setInputValue(formatTime(timeLeft)); // Revert
-                 event.currentTarget.blur(); // Remove focus
+                setInputValue(formatTime(timeLeft));
+                event.currentTarget.blur();
             }
         } else if (event.key === 'Escape') {
              event.preventDefault();
-             setInputValue(formatTime(timeLeft)); // Revert on Escape
+             setInputValue(formatTime(timeLeft));
              event.currentTarget.blur();
         }
     };
 
     const handleFocus = () => {
-        setIsFocused(true);
+        if(isEditable) setIsFocused(true);
     }
 
+    // Add a subtle text shadow using arbitrary values if text-shadow utility isn't configured
+    const textShadowStyle = '[text-shadow:1px_1px_3px_rgba(0,0,0,0.15)]';
+
     return (
-        <div className={`relative z-10 text-6xl md:text-7xl font-mono font-bold transition-colors duration-500 w-full text-center ${styles.textColor}`}>
+        <div className={`relative z-10 text-6xl md:text-7xl font-mono font-bold transition-colors duration-500 w-full text-center select-none ${styles.textColor} ${textShadowStyle}`}>
             {isEditable ? (
                 <input
                     type="text"
@@ -87,14 +75,15 @@ export const TimerDisplay: React.FC = () => {
                     onBlur={handleInputBlur}
                     onFocus={handleFocus}
                     onKeyDown={handleKeyDown}
-                    className="bg-transparent border-none outline-none text-center w-full p-0 m-0 inherit font-inherit text-inherit"
-                    // Add pattern for basic guidance, though validation is manual
-                    // pattern="\d{1,2}:\d{2}"
-                    title="Edite o tempo no formato MM:SS"
+                    // Use current text color for the caret
+                    className="bg-transparent border-none outline-none text-center w-full p-0 m-0 caret-current font-inherit text-inherit"
+                    maxLength={5} // Limit input length (e.g., 99:59)
+                    title="Edite o tempo (MM:SS)"
                     aria-label="Tempo restante editável"
                 />
             ) : (
-                <span>{formatTime(timeLeft)}</span>
+                // Add select-none to prevent text selection when not editable
+                <span className="select-none">{formatTime(timeLeft)}</span>
             )}
         </div>
     );
