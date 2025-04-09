@@ -68,6 +68,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
                      <FiTarget className="w-3.5 h-3.5 flex-shrink-0" />
                      <span>{formatTime(entry.duration)}</span>
                 </div>
+                {/* Empty div */}
+                <div className="flex-grow"></div>
             </div>
 
             {/* Content Sections */}
@@ -129,7 +131,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
 
             {/* --- Action Buttons (Improved Styling & Positioning) --- */}
              {/* Adjusted position, increased padding, slightly softer background on hover */}
-            <div className={`absolute bottom-3 right-3 flex items-center space-x-1.5 transition-opacity duration-150 ${isEditing ? 'opacity-100' : 'opacity-0 group-hover:opacity-90 focus-within:opacity-90'}`}>
+            <div className={`absolute top-3 right-3 flex items-center space-x-1.5 transition-opacity duration-150 ${isEditing ? 'opacity-100' : 'opacity-0 group-hover:opacity-90 focus-within:opacity-90'}`}>
                  {isEditing ? (
                     <>
                         <button
