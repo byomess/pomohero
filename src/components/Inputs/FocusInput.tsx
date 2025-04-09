@@ -138,7 +138,7 @@ export const FocusInput: React.FC = () => {
 
             {/* List of Current Focus Points */}
             {currentFocusPoints.length > 0 && (
-                <ul className="mt-2 space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar-thin pr-1">
+                <ul className="mt-2 space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-1">
                     {currentFocusPoints.map((point, index) => (
                         <li key={index} className="flex items-center justify-between text-sm bg-black/10 p-1.5 rounded min-h-[36px]"> {/* Added min-height */}
                             {editingIndex === index ? (

@@ -1,13 +1,18 @@
-// src/types/index.ts
 export type Phase = 'Work' | 'Short Break' | 'Long Break';
+
+export interface BacklogTask {
+  id: string;
+  text: string;
+}
 
 export interface HistoryEntry {
     id: string;
     startTime: number;
     endTime: number;
     duration: number;
-    focusPoints: string[]; // Deve ser sempre string[]
+    focusPoints: string[];
     feedbackNotes: string;
+    nextFocusPlans?: string[];
 }
 
 export interface PomodoroSettings {
@@ -20,24 +25,29 @@ export interface PomodoroSettings {
 
 export interface DynamicStyles {
     baseBgColor: string;
-    finalHistoryBorderColor: string;
+    finalHistoryBorderColor: string; // e.g., border-purple-600/50
+    timerHighlightBorderColor: string; // <<< NOVO: e.g., border-purple-600 >>>
     textColor: string;
-    progressColor: string;
+    progressColor: string; // Class name like 'bg-slate-400'
     buttonColor: string;
     buttonActiveColor: string;
     inputBgColor: string;
     phaseText: string;
-    modalAccentColor: string;
+    modalAccentColor: string; // Ring class like 'ring-slate-500'
     finalBgColor: string;
 }
 
-// HistoryUpdateData: focusPoints é opcional e deve ser string[]
-export type HistoryUpdateData = Partial<Omit<HistoryEntry, 'id' | 'focusPoints'> & { focusPoints?: string[] }>;
+export type HistoryUpdateData = Partial<Omit<HistoryEntry, 'id'>>;
 
-// ManualHistoryEntryData: focusPoints é obrigatório e deve ser string[]
-export type ManualHistoryEntryData = Omit<HistoryEntry, 'id' | 'focusPoints'> & { focusPoints: string[] };
+export type ManualHistoryEntryData = Omit<HistoryEntry, 'id' | 'nextFocusPlans'>;
 
-export interface BacklogTask {
-    id: string;
-    text: string;
+export type MusicCategory = 'music' | 'ambient' | 'noise';
+
+export interface Track {
+  id: string;
+  title: string;
+  artist?: string; // Optional artist
+  src: string; // URL or path to audio file
+  coverArtSrc: string; // URL or path to cover art
+  category: MusicCategory; // Link to category
 }

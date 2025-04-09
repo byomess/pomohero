@@ -1,7 +1,7 @@
 // src/components/History/ManualHistoryEntryForm.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { usePomodoro } from '../../contexts/PomodoroContext';
-import { ManualHistoryEntryData } from '../../types';
+import { ManualHistoryEntryData } from '../../types'; // Tipo já não inclui nextFocusPlans
 import { FiSave, FiX } from 'react-icons/fi';
 
 interface ManualHistoryEntryFormProps {
@@ -60,6 +60,7 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
              return;
         }
 
+        // nextFocusPlans não é incluído aqui
         const newEntryData: ManualHistoryEntryData = {
             startTime,
             endTime,
@@ -79,7 +80,6 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
 
     const formElementStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm custom-scrollbar-thin ${styles.inputBgColor} ${styles.textColor} ${styles.modalAccentColor}`;
     const labelStyle = "block text-xs font-medium mb-1 opacity-90";
-    // Estilo inline para sugerir ícone claro para o date picker
     const dateInputStyle = { colorScheme: 'dark' };
 
     return (
@@ -93,27 +93,17 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
                 <div>
                     <label htmlFor="manualStartTime" className={labelStyle}>Início:</label>
                     <input
-                        type="datetime-local"
-                        id="manualStartTime"
-                        value={startTimeStr}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setStartTimeStr(e.target.value)}
-                        required
-                        className={`${formElementStyle} text-xs`} // Use consistent style
-                        // Aplicar o estilo inline aqui
-                        style={dateInputStyle}
+                        type="datetime-local" id="manualStartTime" value={startTimeStr}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setStartTimeStr(e.target.value)} required
+                        className={`${formElementStyle} text-xs`} style={dateInputStyle}
                     />
                 </div>
                  <div>
                     <label htmlFor="manualEndTime" className={labelStyle}>Fim:</label>
                     <input
-                        type="datetime-local"
-                        id="manualEndTime"
-                        value={endTimeStr}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setEndTimeStr(e.target.value)}
-                        required
-                        className={`${formElementStyle} text-xs`} // Use consistent style
-                         // Aplicar o estilo inline aqui
-                        style={dateInputStyle}
+                        type="datetime-local" id="manualEndTime" value={endTimeStr}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setEndTimeStr(e.target.value)} required
+                        className={`${formElementStyle} text-xs`} style={dateInputStyle}
                     />
                 </div>
             </div>
@@ -122,13 +112,9 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
                     Pontos de Foco (um por linha) <span className="text-red-400">*</span>:
                 </label>
                 <textarea
-                    id="manualFocusPoints"
-                    rows={4}
-                    value={focusPointsText}
-                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFocusPointsText(e.target.value)}
-                    required
-                    className={`${formElementStyle} resize-none`}
-                    placeholder="Digite cada ponto de foco em uma nova linha..."
+                    id="manualFocusPoints" rows={4} value={focusPointsText}
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFocusPointsText(e.target.value)} required
+                    className={`${formElementStyle} resize-none`} placeholder="Digite cada ponto de foco em uma nova linha..."
                 />
             </div>
             <div>
@@ -136,28 +122,20 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
                      Notas de Feedback (Opcional):
                 </label>
                 <textarea
-                    id="manualFeedbackNotes"
-                    rows={3}
-                    value={feedbackNotes}
+                    id="manualFeedbackNotes" rows={3} value={feedbackNotes}
                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFeedbackNotes(e.target.value)}
-                    className={`${formElementStyle} resize-none`}
-                    placeholder="Como foi a sessão?"
+                    className={`${formElementStyle} resize-none`} placeholder="Como foi a sessão?"
                 />
             </div>
             <div className="flex justify-end items-center space-x-3 pt-2">
                  <button
-                    type="button"
-                    onClick={onClose}
+                    type="button" onClick={onClose}
                     className={`px-4 py-1.5 rounded-lg text-xs font-medium ${styles.buttonColor} hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 flex items-center gap-1.5`}
-                 >
-                     <FiX className="h-4 w-4" /> Cancelar
-                </button>
+                 > <FiX className="h-4 w-4" /> Cancelar </button>
                  <button
                     type="submit"
                     className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${styles.buttonActiveColor} hover:opacity-95 transition-opacity flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black/30 ${styles.modalAccentColor}`}
-                 >
-                     <FiSave className="h-4 w-4" /> Salvar Entrada
-                 </button>
+                 > <FiSave className="h-4 w-4" /> Salvar Entrada </button>
              </div>
         </form>
     );
