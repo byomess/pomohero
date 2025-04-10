@@ -51,7 +51,7 @@ export const TimerAdjustControls: React.FC = () => {
     `;
 
     return (
-        <div className="flex flex-col justify-center items-center min-h-[44px] mt-2 mb-[-10px] relative z-10 px-4">
+        <div className="flex flex-col justify-center items-center min-h-[44px] mb-2 relative z-10 px-4">
 
             {showAdjustControls && (
                 <div className="flex justify-center items-center space-x-4 animate-fade-in-down">
