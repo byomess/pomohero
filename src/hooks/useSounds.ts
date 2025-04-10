@@ -19,6 +19,7 @@ const soundMap = {
     remove: new Howl({ src: ['/sounds/remove.ogg', '/sounds/remove.mp3'], volume: 0.5 }),
     focusStart: new Howl({ src: ['/sounds/focus_start.ogg', '/sounds/focus_start.wav'], volume: 0.5 }),
     focusAlmostEnding: new Howl({ src: ['/sounds/focus_almost_ending.ogg', '/sounds/focus_almost_ending.mp3', '/sounds/focus_almost_ending.wav'], volume: 0.2 }),
+    hyperfocus: new Howl({ src: ['/sounds/hyperfocus.ogg', '/sounds/hyperfocus.mp3'], volume: 0.5 }),
 };
 
 export type SoundName = keyof typeof soundMap;

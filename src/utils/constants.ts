@@ -22,9 +22,23 @@ export const HISTORY_STORAGE_KEY = 'pomodoroHistory_v1';
 export const SETTINGS_STORAGE_KEY = 'pomodoroSettings_v1';
 export const BACKLOG_STORAGE_KEY = 'pomohero_backlog';
 
-export const DEFAULT_MUSIC_VOLUME = 0.1; // Default volume for music player
+export const DEFAULT_MUSIC_VOLUME = 0.5; // Default volume for music player
 export const MUSIC_VOLUME_STORAGE_KEY = 'pomohero_music_volume'; // Local storage key
 export const MUSIC_VOLUME_DUCKED = 0.03; // Volume level when ducking (lower than default)
 export const MUSIC_DUCKING_DURATION_MS = 800; // How long the music stays ducked after sound starts
 
-// ... other constants
+export const FOCUS_TARGET_VOLUME = 0.1;
+export const BREAK_TARGET_VOLUME = 0.5;
+
+export const WORK_PROGRESS_RUNNING = 'bg-purple-600'; // Example
+export const WORK_PROGRESS_PAUSED = 'bg-slate-400';  // Example
+export const SHORT_BREAK_PROGRESS = 'bg-cyan-500';  // Example
+export const LONG_BREAK_PROGRESS = 'bg-teal-500';   // Example
+
+export const HYPERFOCUS_BG_RUNNING = 'bg-gradient-to-br from-red-900 to-rose-950'; // Darker red gradient
+export const HYPERFOCUS_BG_PAUSED = 'bg-gradient-to-br from-red-950 to-rose-950'; // Even darker, leaning towards rose
+export const HYPERFOCUS_BORDER = 'border-red-700';             // Darker border (700 instead of 600)
+export const HYPERFOCUS_PROGRESS = 'bg-red-600';              // Slightly darker progress (600 instead of 500)
+export const HYPERFOCUS_ACCENT_RING = 'ring-red-600';           // Slightly darker ring (600 instead of 500)
+export const HYPERFOCUS_HIST_BORDER_RUNNING = 'border-red-700/50'; // Darker history border
+export const HYPERFOCUS_HIST_BORDER_PAUSED = 'border-red-800/50'; // Even darker paused history border

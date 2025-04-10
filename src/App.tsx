@@ -31,7 +31,6 @@ const PomodoroLayout: React.FC = () => {
                 </div>
 
                 {/* --- Coluna Central (Timer) --- */}
-                {/* <<< ADICIONADO border-2 e styles.timerHighlightBorderColor >>> */}
                 <div className={`
                     w-full lg:flex-1 p-6 md:p-8 rounded-3xl shadow-2xl backdrop-blur-sm bg-black/25
                     ${styles.textColor} order-first lg:order-none flex flex-col
