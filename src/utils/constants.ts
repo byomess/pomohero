@@ -22,3 +22,9 @@ export const HISTORY_STORAGE_KEY = 'pomodoroHistory_v1';
 export const SETTINGS_STORAGE_KEY = 'pomodoroSettings_v1';
 export const BACKLOG_STORAGE_KEY = 'pomohero_backlog';
 
+export const DEFAULT_MUSIC_VOLUME = 0.1; // Default volume for music player
+export const MUSIC_VOLUME_STORAGE_KEY = 'pomohero_music_volume'; // Local storage key
+export const MUSIC_VOLUME_DUCKED = 0.03; // Volume level when ducking (lower than default)
+export const MUSIC_DUCKING_DURATION_MS = 800; // How long the music stays ducked after sound starts
+
+// ... other constants

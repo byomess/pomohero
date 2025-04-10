@@ -58,10 +58,10 @@ interface PomodoroContextType {
     addFocusPoint: (point: string, playSoundEffect?: boolean) => void;
     removeFocusPoint: (index: number) => void;
     setCurrentFeedbackNotes: React.Dispatch<React.SetStateAction<string>>;
-    setNextFocusPlans: React.Dispatch<React.SetStateAction<string[]>>; // <<< ALTERADO PARA string[] >>>
-    addNextFocusPlan: (plan: string) => void; // <<< NOVO >>>
-    removeNextFocusPlan: (index: number) => void; // <<< NOVO >>>
-    updateNextFocusPlan: (index: number, newText: string) => void; // <<< NOVO >>>
+    setNextFocusPlans: React.Dispatch<React.SetStateAction<string[]>>;
+    addNextFocusPlan: (plan: string) => void;
+    removeNextFocusPlan: (index: number) => void;
+    updateNextFocusPlan: (index: number, newText: string) => void;
     startPauseTimer: () => void;
     resetTimer: () => void;
     skipPhase: () => void;
@@ -107,7 +107,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const [initialDuration, setInitialDuration] = useState<number>(settings.workDuration);
     const [currentFocusPoints, setCurrentFocusPoints] = useState<string[]>([]);
     const [currentFeedbackNotes, setCurrentFeedbackNotes] = useState<string>('');
-    const [nextFocusPlans, setNextFocusPlans] = useState<string[]>([]); // <<< ALTERADO PARA string[] >>>
+    const [nextFocusPlans, setNextFocusPlans] = useState<string[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
     const [activeBgColorOverride, setActiveBgColorOverride] = useState<string | null>(null);
     const [currentSessionStartTime, setCurrentSessionStartTime] = useState<number | null>(null);
@@ -135,7 +135,6 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         playSound('remove');
     }, [setCurrentFocusPoints, playSound]);
 
-    // <<< NOVAS FUNÇÕES CRUD para nextFocusPlans >>>
     const addNextFocusPlan = useCallback((plan: string) => {
         const trimmedPlan = plan.trim();
         if (trimmedPlan) {
@@ -152,14 +151,12 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
      const updateNextFocusPlan = useCallback((index: number, newText: string) => {
         const trimmedText = newText.trim();
          if (trimmedText === '') {
-             alert("O plano não pode ficar vazio."); // Ou remover? Optamos por alertar.
+             alert("O plano não pode ficar vazio.");
              return;
          }
          setNextFocusPlans(prev => prev.map((plan, i) => i === index ? trimmedText : plan));
         playSound('confirm');
     }, [setNextFocusPlans, playSound]);
-    // <<< FIM NOVAS FUNÇÕES CRUD >>>
-
 
     const saveFocusToHistory = useCallback(() => {
         if (currentSessionStartTime === null) return;
@@ -173,34 +170,30 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
 
     const updateBreakInfoInHistory = useCallback(() => {
         const feedback = currentFeedbackNotes.trim();
-        // <<< USA o array de planos diretamente >>>
-        const plans = nextFocusPlans.filter(p => p.trim() !== ''); // Garante que só salvemos planos válidos
+        const plans = nextFocusPlans.filter(p => p.trim() !== '');
 
-        if (feedback === '' && plans.length === 0) return; // Só atualiza se houver feedback ou planos válidos
+        if (feedback === '' && plans.length === 0) return;
 
         setHistory((prevHistory) => {
             if (prevHistory.length === 0) return prevHistory;
             const lastEntry = prevHistory[0];
 
             const needsFeedbackUpdate = lastEntry.feedbackNotes === '' && feedback !== '';
-            // <<< Compara arrays (verifica se são diferentes ou se um deles tem planos e o outro não) >>>
             const needsPlansUpdate = (!lastEntry.nextFocusPlans || lastEntry.nextFocusPlans.length === 0) && plans.length > 0 ||
                                       (lastEntry.nextFocusPlans && JSON.stringify(lastEntry.nextFocusPlans) !== JSON.stringify(plans));
 
             if (needsFeedbackUpdate || needsPlansUpdate) {
                 const updates: HistoryUpdateData = {};
                 if (needsFeedbackUpdate) updates.feedbackNotes = feedback;
-                // <<< Salva o array de planos, ou undefined se estiver vazio >>>
                 if (needsPlansUpdate) updates.nextFocusPlans = plans.length > 0 ? plans : undefined;
 
                 return [{ ...lastEntry, ...updates }, ...prevHistory.slice(1)];
             }
             return prevHistory;
         });
-    }, [currentFeedbackNotes, nextFocusPlans, setHistory]); // nextFocusPlans é array agora
+    }, [currentFeedbackNotes, nextFocusPlans, setHistory]);
 
     const updateHistoryEntry = useCallback((id: string, updatedData: HistoryUpdateData) => {
-        // <<< Garante que nextFocusPlans seja undefined se for um array vazio ou só com strings vazias >>>
         if (updatedData.nextFocusPlans && updatedData.nextFocusPlans.filter(p => p.trim() !== '').length === 0) {
             updatedData.nextFocusPlans = undefined;
         }
@@ -291,9 +284,9 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             nextPhase = (nextCycleCount > 0 && nextCycleCount % cyclesBeforeLongBreak === 0) ? 'Long Break' : 'Short Break';
             nextDuration = nextPhase === 'Long Break' ? longBreakDuration : shortBreakDuration;
         } else {
-            updateBreakInfoInHistory(); // Salva feedback e planos (array) no histórico
+            updateBreakInfoInHistory();
             setCurrentFeedbackNotes('');
-            setNextFocusPlans([]); // <<< LIMPAR ARRAY DE PLANOS >>>
+            setNextFocusPlans([]);
 
             nextPhase = 'Work'; nextDuration = workDuration;
         }
@@ -304,7 +297,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     }, [
         currentPhase, cycleCount, saveFocusToHistory, workDuration, shortBreakDuration, longBreakDuration,
         cyclesBeforeLongBreak, playSound, playAlarmLoop, stopAlarmLoop, clearFocusStartEffect,
-        updateBreakInfoInHistory, // Função atualizada
+        updateBreakInfoInHistory,
         setCurrentFocusPoints, setCurrentFeedbackNotes, setCycleCount, setCurrentPhase, setTimeLeft,
         setInitialDuration, setCurrentSessionStartTime, setIsRunning, setNextFocusPlans
     ]);
@@ -336,9 +329,9 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             clearFocusStartEffect(); setIsRunning(false);
         }
      }, [
-        stopAlarmLoop, isRunning, currentPhase, currentFocusPoints, history, timeLeft, playSound,
+        stopAlarmLoop, isRunning, currentPhase, currentFocusPoints, timeLeft, playSound,
         clearFocusStartEffect, setInitialDuration, setCurrentSessionStartTime,
-        setActiveBgColorOverride, setIsRunning, settings
+        setActiveBgColorOverride, setIsRunning
      ]);
 
     const resetTimer = useCallback(() => {
@@ -355,7 +348,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         if (currentPhase === 'Work') {
             setCurrentFocusPoints([]);
         } else {
-             setNextFocusPlans([]); // <<< LIMPAR ARRAY >>>
+             setNextFocusPlans([]);
              setCurrentFeedbackNotes('');
         }
     }, [
@@ -370,7 +363,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             updateBreakInfoInHistory();
         }
         setCurrentFeedbackNotes('');
-        setNextFocusPlans([]); // <<< LIMPAR ARRAY >>>
+        setNextFocusPlans([]);
 
         timerDeadlineRef.current = null; nextPhaseTriggeredRef.current = false;
         handleNextPhase(false);
@@ -424,7 +417,14 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             const now = Date.now();
             const remainingMs = timerDeadlineRef.current - now;
             const newTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
-            setTimeLeft(currentTime => (currentTime !== newTimeLeft ? newTimeLeft : currentTime));
+
+            setTimeLeft(currentTime => {
+                if (currentPhase === 'Work' && isRunning && currentTime > 60 && newTimeLeft === 60) {
+                    playSound('focusAlmostEnding');
+                }
+                return currentTime !== newTimeLeft ? newTimeLeft : currentTime;
+            });
+
             if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
                  if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
                  handleNextPhase(true);
@@ -441,7 +441,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
         }
         return () => { if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; } };
-     }, [isRunning, timeLeft, handleNextPhase, stopAlarmLoop]);
+     }, [isRunning, timeLeft, handleNextPhase, stopAlarmLoop, currentPhase, playSound]);
 
     useEffect(() => {
         const handleVisibilityChange = () => {
@@ -451,7 +451,14 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
                     const now = Date.now();
                     const remainingMs = timerDeadlineRef.current - now;
                     const correctedTimeLeft = Math.max(0, Math.round(remainingMs / 1000));
-                    setTimeLeft(currentTime => currentTime !== correctedTimeLeft ? correctedTimeLeft : currentTime);
+
+                    setTimeLeft(currentTime => {
+                         if (currentPhase === 'Work' && isRunning && currentTime > 60 && correctedTimeLeft === 60) {
+                             playSound('focusAlmostEnding');
+                         }
+                         return currentTime !== correctedTimeLeft ? correctedTimeLeft : currentTime;
+                     });
+
                     if (remainingMs <= 0 && !nextPhaseTriggeredRef.current) {
                         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
                         handleNextPhase(true);
@@ -461,7 +468,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-      }, [isRunning, handleNextPhase, stopAlarmLoop]);
+      }, [isRunning, handleNextPhase, stopAlarmLoop, currentPhase, playSound]);
 
     useEffect(() => {
         const baseTitle = "PomoHero";
@@ -470,7 +477,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
 
     const styles = useMemo((): DynamicStyles => {
         let baseBg: string;
-        let timerHighlightBorder = ''; // <<< Adicionar variável
+        let timerHighlightBorder = '';
         let txt = '', prog = '', btn = '', btnAct = '', inputBg = '', histBorder = '', phase = '', modalAcc = '';
 
         if (currentPhase === 'Work') {
@@ -480,21 +487,21 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
             inputBg = 'bg-black/30 placeholder-slate-400/70 focus:ring-slate-400';
             phase = "Foco"; modalAcc = 'ring-slate-500';
             histBorder = isRunning ? 'border-purple-600/50' : 'border-slate-600/50';
-            timerHighlightBorder = isRunning ? 'border-purple-600' : 'border-slate-600'; // <<< Definir cor sem opacidade
+            timerHighlightBorder = isRunning ? 'border-purple-600' : 'border-slate-600';
         } else if (currentPhase === 'Short Break') {
             baseBg = isRunning ? SHORT_BREAK_BG_RUNNING : SHORT_BREAK_BG_PAUSED;
             txt = 'text-cyan-100'; prog = 'bg-cyan-500';
             btn = 'bg-white/10 hover:bg-white/20 text-cyan-100'; btnAct = 'bg-white/25 text-white';
             inputBg = 'bg-black/30 placeholder-cyan-600/70 focus:ring-cyan-500';
             histBorder = 'border-cyan-600/50'; phase = "Pausa Curta"; modalAcc = 'ring-cyan-500';
-            timerHighlightBorder = isRunning ? 'border-cyan-500' : 'border-cyan-600'; // <<< Definir cor sem opacidade
-        } else { // Long Break
+            timerHighlightBorder = isRunning ? 'border-cyan-500' : 'border-cyan-600';
+        } else {
             baseBg = isRunning ? LONG_BREAK_BG_RUNNING : LONG_BREAK_BG_PAUSED;
             txt = 'text-teal-100'; prog = 'bg-teal-500';
             btn = 'bg-white/10 hover:bg-white/20 text-teal-100'; btnAct = 'bg-white/25 text-white';
             inputBg = 'bg-black/30 placeholder-teal-600/70 focus:ring-teal-500';
             histBorder = 'border-teal-600/50'; phase = "Pausa Longa"; modalAcc = 'ring-teal-500';
-            timerHighlightBorder = isRunning ? 'border-teal-500' : 'border-teal-600'; // <<< Definir cor sem opacidade
+            timerHighlightBorder = isRunning ? 'border-teal-500' : 'border-teal-600';
         }
 
         let finalBg = baseBg; let finalHistBorder = histBorder;
@@ -504,25 +511,25 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
              if (currentPhase === 'Work') {
                 if (activeBgColorOverride === EFFECT_FLASH_COLOR_1) {
                     finalHistBorder = 'border-purple-700/50';
-                    timerHighlightBorder = 'border-purple-700'; // <<< Atualizar durante flash
+                    timerHighlightBorder = 'border-purple-700';
                 } else if (activeBgColorOverride === WORK_BG_PAUSED) {
                      finalHistBorder = 'border-slate-600/50';
-                     timerHighlightBorder = 'border-slate-600'; // <<< Atualizar durante flash
+                     timerHighlightBorder = 'border-slate-600';
                  } else if (activeBgColorOverride === WORK_BG_RUNNING) {
                      finalHistBorder = 'border-purple-600/50';
-                     timerHighlightBorder = 'border-purple-600'; // <<< Atualizar durante flash
+                     timerHighlightBorder = 'border-purple-600';
                  }
              }
         }
         return {
             baseBgColor: baseBg,
             finalHistoryBorderColor: finalHistBorder,
-            timerHighlightBorderColor: timerHighlightBorder, // <<< Retornar nova propriedade
+            timerHighlightBorderColor: timerHighlightBorder,
             textColor: txt, progressColor: prog, buttonColor: btn,
             buttonActiveColor: btnAct, inputBgColor: inputBg, phaseText: phase,
             modalAccentColor: modalAcc, finalBgColor: finalBg,
         };
-    }, [currentPhase, isRunning, activeBgColorOverride]); // Dependencies kept
+    }, [currentPhase, isRunning, activeBgColorOverride]);
 
     const contextValue: PomodoroContextType = {
         settings, currentPhase, timeLeft, isRunning, cycleCount, initialDuration,
