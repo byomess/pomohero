@@ -1,7 +1,7 @@
 // src/components/History/ManualHistoryEntryForm.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { usePomodoro } from '../../contexts/PomodoroContext';
-import { ManualHistoryEntryData } from '../../types'; // Tipo já não inclui nextFocusPlans
+import { ManualHistoryEntryData } from '../../types';
 import { FiSave, FiX } from 'react-icons/fi';
 
 interface ManualHistoryEntryFormProps {
@@ -49,24 +49,24 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
         }
 
         const focusPointsArray = stringToFocusPoints(focusPointsText);
-        if (focusPointsArray.length === 0) {
-             setError("É necessário adicionar pelo menos um ponto de foco válido.");
-             return;
-        }
+        // REMOVED: Focus points are no longer mandatory
+        // if (focusPointsArray.length === 0) {
+        //      setError("É necessário adicionar pelo menos um ponto de foco válido.");
+        //      return;
+        // }
 
         const duration = Math.round((endTime - startTime) / 1000);
-        if (duration < 0) {
-             setError("Erro no cálculo da duração. Verifique as datas.");
+        if (duration <= 0) { // Check for non-positive duration
+             setError("Duração inválida. Verifique as datas de início e fim.");
              return;
         }
 
-        // nextFocusPlans não é incluído aqui
         const newEntryData: ManualHistoryEntryData = {
             startTime,
             endTime,
             duration,
-            focusPoints: focusPointsArray,
-            feedbackNotes: feedbackNotes.trim(),
+            focusPoints: focusPointsArray, // Can be empty array
+            feedbackNotes: feedbackNotes.trim(), // Can be empty string
         };
 
         try {
@@ -91,7 +91,7 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
              )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label htmlFor="manualStartTime" className={labelStyle}>Início:</label>
+                    <label htmlFor="manualStartTime" className={labelStyle}>Início <span className="text-red-400">*</span>:</label>
                     <input
                         type="datetime-local" id="manualStartTime" value={startTimeStr}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setStartTimeStr(e.target.value)} required
@@ -99,7 +99,7 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
                     />
                 </div>
                  <div>
-                    <label htmlFor="manualEndTime" className={labelStyle}>Fim:</label>
+                    <label htmlFor="manualEndTime" className={labelStyle}>Fim <span className="text-red-400">*</span>:</label>
                     <input
                         type="datetime-local" id="manualEndTime" value={endTimeStr}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setEndTimeStr(e.target.value)} required
@@ -109,11 +109,11 @@ export const ManualHistoryEntryForm: React.FC<ManualHistoryEntryFormProps> = ({ 
             </div>
             <div>
                 <label htmlFor="manualFocusPoints" className={labelStyle}>
-                    Pontos de Foco (um por linha) <span className="text-red-400">*</span>:
+                    Pontos de Foco (Opcional - um por linha):
                 </label>
                 <textarea
                     id="manualFocusPoints" rows={4} value={focusPointsText}
-                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFocusPointsText(e.target.value)} required
+                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFocusPointsText(e.target.value)}
                     className={`${formElementStyle} resize-none`} placeholder="Digite cada ponto de foco em uma nova linha..."
                 />
             </div>

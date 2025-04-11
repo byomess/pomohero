@@ -33,7 +33,21 @@ export const BREAK_TARGET_VOLUME = 0.5;
 export const WORK_PROGRESS_RUNNING = 'bg-purple-600'; // Example
 export const WORK_PROGRESS_PAUSED = 'bg-slate-400';  // Example
 export const SHORT_BREAK_PROGRESS = 'bg-cyan-500';  // Example
+export const SHORT_BREAK_RUNNING = 'bg-cyan-500';  // Example
+export const SHORT_BREAK_PAUSED = 'bg-sky-500';   // Example
 export const LONG_BREAK_PROGRESS = 'bg-teal-500';   // Example
+export const LONG_BREAK_RUNNING = 'bg-teal-500';   // Example
+export const LONG_BREAK_PAUSED = 'bg-emerald-500'; // Example
+
+export const PRIMARY_FOCUS_PAUSED = 'bg-slate-600';
+export const PRIMARY_FOCUS_RUNNING = 'bg-purple-600';
+export const PRIMARY_FOCUS_FLASHING = 'bg-purple-500';
+export const PRIMARY_HYPERFOCUS_RUNNING = 'bg-red-500';
+export const PRIMARY_HYPERFOCUS_PAUSED = 'bg-red-600';
+export const PRIMARY_SHORT_BREAK_PAUSED = 'bg-cyan-600';
+export const PRIMARY_SHORT_BREAK_RUNNING = 'bg-cyan-500';
+export const PRIMARY_LONG_BREAK_PAUSED = 'bg-emerald-600';
+export const PRIMARY_LONG_BREAK_RUNNING = 'bg-emerald-500';
 
 export const HYPERFOCUS_BG_RUNNING = 'bg-gradient-to-br from-red-900 to-rose-950'; // Darker red gradient
 export const HYPERFOCUS_BG_PAUSED = 'bg-gradient-to-br from-red-950 to-rose-950'; // Even darker, leaning towards rose

@@ -24,30 +24,34 @@ export interface PomodoroSettings {
 }
 
 export interface DynamicStyles {
+  primaryColor: string;
     baseBgColor: string;
-    finalHistoryBorderColor: string; // e.g., border-purple-600/50
-    timerHighlightBorderColor: string; // <<< NOVO: e.g., border-purple-600 >>>
+    finalHistoryBorderColor: string;
+    timerHighlightBorderColor: string;
     textColor: string;
-    progressColor: string; // Class name like 'bg-slate-400'
+    progressColor: string;
     buttonColor: string;
     buttonActiveColor: string;
     inputBgColor: string;
     phaseText: string;
-    modalAccentColor: string; // Ring class like 'ring-slate-500'
+    modalAccentColor: string;
     finalBgColor: string;
 }
 
 export type HistoryUpdateData = Partial<Omit<HistoryEntry, 'id'>>;
 
-export type ManualHistoryEntryData = Omit<HistoryEntry, 'id' | 'nextFocusPlans'>;
+export type ManualHistoryEntryData = Omit<HistoryEntry, 'id' | 'nextFocusPlans'> & {
+    focusPoints?: string[];
+    feedbackNotes?: string;
+};
 
 export type MusicCategory = 'music' | 'ambient' | 'noise';
 
 export interface Track {
   id: string;
   title: string;
-  artist?: string; // Optional artist
-  src: string; // URL or path to audio file
-  coverArtSrc: string; // URL or path to cover art
-  category: MusicCategory; // Link to category
+  artist?: string;
+  src: string;
+  coverArtSrc: string;
+  category: MusicCategory;
 }
