@@ -49,6 +49,14 @@ import {
     PRIMARY_LONG_BREAK_PAUSED,
     PRIMARY_LONG_BREAK_RUNNING,
     PRIMARY_FOCUS_FLASHING,
+    CURRENT_PHASE_STORAGE_KEY,
+    HAS_EXTENDED_CURRENT_FOCUS_STORAGE_KEY,
+    INITIAL_DURATION_STORAGE_KEY,
+    IS_HYPERFOCUS_ACTIVE_STORAGE_KEY,
+    IS_RUNNING_STORAGE_KEY,
+    SHOW_EXTENSION_OPTIONS_STORAGE_KEY,
+    TIMER_STATE_STORAGE_KEY,
+    CURRENT_SESSION_START_TIME_STORAGE_KEY,
 } from '../utils/constants';
 import { formatTime } from '../utils/formatters';
 
@@ -124,22 +132,24 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const [settings, setSettings] = useLocalStorage<PomodoroSettings>(SETTINGS_STORAGE_KEY, defaultSettings);
     const { workDuration, shortBreakDuration, longBreakDuration, cyclesBeforeLongBreak, soundEnabled } = settings;
     const [history, setHistory] = useLocalStorage<HistoryEntry[]>(HISTORY_STORAGE_KEY, []);
-    const [currentPhase, setCurrentPhase] = useState<Phase>('Work');
-    const [timeLeft, setTimeLeft] = useState<number>(settings.workDuration);
-    const [isRunning, setIsRunning] = useState<boolean>(false);
-    const [cycleCount, setCycleCount] = useLocalStorage<number>(CYCLE_COUNT_STORAGE_KEY, 0); // Modificado aqui
-    const [initialDuration, setInitialDuration] = useState<number>(settings.workDuration);
+
+    const [currentPhase, setCurrentPhase] = useLocalStorage<Phase>(CURRENT_PHASE_STORAGE_KEY, 'Work');
+    const [timeLeft, setTimeLeft] = useLocalStorage<number>(TIMER_STATE_STORAGE_KEY, workDuration);
+    const [isRunning, setIsRunning] = useLocalStorage<boolean>(IS_RUNNING_STORAGE_KEY, false);
+    const [cycleCount, setCycleCount] = useLocalStorage<number>(CYCLE_COUNT_STORAGE_KEY, 0);
+    const [initialDuration, setInitialDuration] = useLocalStorage<number>(INITIAL_DURATION_STORAGE_KEY, workDuration);
+    const [showExtensionOptions, setShowExtensionOptions] = useLocalStorage<boolean>(SHOW_EXTENSION_OPTIONS_STORAGE_KEY, false);
+    const [hasExtendedCurrentFocus, setHasExtendedCurrentFocus] = useLocalStorage<boolean>(HAS_EXTENDED_CURRENT_FOCUS_STORAGE_KEY, false);
+    const [isHyperfocusActive, setIsHyperfocusActive] = useLocalStorage<boolean>(IS_HYPERFOCUS_ACTIVE_STORAGE_KEY, false);
+    const [backlogTasks, setBacklogTasks] = useLocalStorage<BacklogTask[]>(BACKLOG_STORAGE_KEY, []);
+    const [currentSessionStartTime, setCurrentSessionStartTime] = useLocalStorage<number | null>(CURRENT_SESSION_START_TIME_STORAGE_KEY, null);
+    
     const [currentFocusPoints, setCurrentFocusPoints] = useState<string[]>([]);
     const [currentFeedbackNotes, setCurrentFeedbackNotes] = useState<string>('');
     const [nextFocusPlans, setNextFocusPlans] = useState<string[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
     const [activeBgColorOverride, setActiveBgColorOverride] = useState<string | null>(null);
-    const [currentSessionStartTime, setCurrentSessionStartTime] = useState<number | null>(null);
-    const [backlogTasks, setBacklogTasks] = useLocalStorage<BacklogTask[]>(BACKLOG_STORAGE_KEY, []);
     const [targetMusicVolume, setTargetMusicVolume] = useState<number>(FOCUS_TARGET_VOLUME);
-    const [showExtensionOptions, setShowExtensionOptions] = useState<boolean>(false);
-    const [hasExtendedCurrentFocus, setHasExtendedCurrentFocus] = useState<boolean>(false);
-    const [isHyperfocusActive, setIsHyperfocusActive] = useState<boolean>(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const focusStartEffectTimeouts = useRef<NodeJS.Timeout[]>([]);

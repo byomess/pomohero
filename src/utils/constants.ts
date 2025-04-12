@@ -22,7 +22,16 @@ export const HISTORY_STORAGE_KEY = 'pomodoroHistory_v1';
 export const SETTINGS_STORAGE_KEY = 'pomodoroSettings_v1';
 export const BACKLOG_STORAGE_KEY = 'pomohero_backlog';
 export const CYCLE_COUNT_STORAGE_KEY = 'pomohero_cycle_count';
+export const TIMER_STATE_STORAGE_KEY = 'pomohero_timer_state';
+export const CURRENT_PHASE_STORAGE_KEY = 'pomohero_current_phase';
+export const IS_RUNNING_STORAGE_KEY = 'pomohero_is_running';
+export const INITIAL_DURATION_STORAGE_KEY = 'pomohero_initial_duration';
+export const SHOW_EXTENSION_OPTIONS_STORAGE_KEY = 'pomohero_show_extension_options';
+export const HAS_EXTENDED_CURRENT_FOCUS_STORAGE_KEY = 'pomohero_has_extended_current_focus';
+export const IS_HYPERFOCUS_ACTIVE_STORAGE_KEY = 'pomohero_is_hyperfocus_active';
+export const CURRENT_SESSION_START_TIME_STORAGE_KEY = 'pomohero_current_session_start_time';
 
+export const DEFAULT_LOCAL_STORAGE_SAVE_DEBOUNCE_MS = 3000; // Default debounce time for local storage saves
 export const DEFAULT_MUSIC_VOLUME = 0.5; // Default volume for music player
 export const MUSIC_VOLUME_STORAGE_KEY = 'pomohero_music_volume'; // Local storage key
 export const MUSIC_VOLUME_DUCKED = 0.03; // Volume level when ducking (lower than default)
