@@ -57,6 +57,9 @@ import {
     SHOW_EXTENSION_OPTIONS_STORAGE_KEY,
     TIMER_STATE_STORAGE_KEY,
     CURRENT_SESSION_START_TIME_STORAGE_KEY,
+    CURRENT_FEEDBACK_NOTES_STORAGE_KEY,
+    CURRENT_FOCUS_POINTS_STORAGE_KEY,
+    NEXT_FOCUS_PLANS_STORAGE_KEY,
 } from '../utils/constants';
 import { formatTime } from '../utils/formatters';
 
@@ -131,8 +134,8 @@ interface PomodoroProviderProps {
 export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) => {
     const [settings, setSettings] = useLocalStorage<PomodoroSettings>(SETTINGS_STORAGE_KEY, defaultSettings);
     const { workDuration, shortBreakDuration, longBreakDuration, cyclesBeforeLongBreak, soundEnabled } = settings;
-    const [history, setHistory] = useLocalStorage<HistoryEntry[]>(HISTORY_STORAGE_KEY, []);
 
+    const [history, setHistory] = useLocalStorage<HistoryEntry[]>(HISTORY_STORAGE_KEY, []);
     const [currentPhase, setCurrentPhase] = useLocalStorage<Phase>(CURRENT_PHASE_STORAGE_KEY, 'Work');
     const [timeLeft, setTimeLeft] = useLocalStorage<number>(TIMER_STATE_STORAGE_KEY, workDuration);
     const [isRunning, setIsRunning] = useLocalStorage<boolean>(IS_RUNNING_STORAGE_KEY, false);
@@ -143,10 +146,10 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const [isHyperfocusActive, setIsHyperfocusActive] = useLocalStorage<boolean>(IS_HYPERFOCUS_ACTIVE_STORAGE_KEY, false);
     const [backlogTasks, setBacklogTasks] = useLocalStorage<BacklogTask[]>(BACKLOG_STORAGE_KEY, []);
     const [currentSessionStartTime, setCurrentSessionStartTime] = useLocalStorage<number | null>(CURRENT_SESSION_START_TIME_STORAGE_KEY, null);
+    const [currentFocusPoints, setCurrentFocusPoints] = useLocalStorage<string[]>(CURRENT_FOCUS_POINTS_STORAGE_KEY, []);
+    const [currentFeedbackNotes, setCurrentFeedbackNotes] = useLocalStorage<string>(CURRENT_FEEDBACK_NOTES_STORAGE_KEY, '');
+    const [nextFocusPlans, setNextFocusPlans] = useLocalStorage<string[]>(NEXT_FOCUS_PLANS_STORAGE_KEY, []);
     
-    const [currentFocusPoints, setCurrentFocusPoints] = useState<string[]>([]);
-    const [currentFeedbackNotes, setCurrentFeedbackNotes] = useState<string>('');
-    const [nextFocusPlans, setNextFocusPlans] = useState<string[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
     const [activeBgColorOverride, setActiveBgColorOverride] = useState<string | null>(null);
     const [targetMusicVolume, setTargetMusicVolume] = useState<number>(FOCUS_TARGET_VOLUME);

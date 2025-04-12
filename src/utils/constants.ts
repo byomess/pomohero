@@ -30,6 +30,9 @@ export const SHOW_EXTENSION_OPTIONS_STORAGE_KEY = 'pomohero_show_extension_optio
 export const HAS_EXTENDED_CURRENT_FOCUS_STORAGE_KEY = 'pomohero_has_extended_current_focus';
 export const IS_HYPERFOCUS_ACTIVE_STORAGE_KEY = 'pomohero_is_hyperfocus_active';
 export const CURRENT_SESSION_START_TIME_STORAGE_KEY = 'pomohero_current_session_start_time';
+export const CURRENT_FOCUS_POINTS_STORAGE_KEY = 'pomohero_current_focus_points';
+export const CURRENT_FEEDBACK_NOTES_STORAGE_KEY = 'pomohero_current_feedback_notes';
+export const NEXT_FOCUS_PLANS_STORAGE_KEY = 'pomohero_next_focus_plans';
 
 export const DEFAULT_LOCAL_STORAGE_SAVE_DEBOUNCE_MS = 3000; // Default debounce time for local storage saves
 export const DEFAULT_MUSIC_VOLUME = 0.5; // Default volume for music player
