@@ -20,6 +20,7 @@ import {
     HISTORY_STORAGE_KEY,
     SETTINGS_STORAGE_KEY,
     BACKLOG_STORAGE_KEY,
+    CYCLE_COUNT_STORAGE_KEY, // Nova chave adicionada
     WORK_BG_PAUSED,
     WORK_BG_RUNNING,
     SHORT_BREAK_BG_PAUSED,
@@ -126,7 +127,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const [currentPhase, setCurrentPhase] = useState<Phase>('Work');
     const [timeLeft, setTimeLeft] = useState<number>(settings.workDuration);
     const [isRunning, setIsRunning] = useState<boolean>(false);
-    const [cycleCount, setCycleCount] = useState<number>(0);
+    const [cycleCount, setCycleCount] = useLocalStorage<number>(CYCLE_COUNT_STORAGE_KEY, 0); // Modificado aqui
     const [initialDuration, setInitialDuration] = useState<number>(settings.workDuration);
     const [currentFocusPoints, setCurrentFocusPoints] = useState<string[]>([]);
     const [currentFeedbackNotes, setCurrentFeedbackNotes] = useState<string>('');
@@ -355,9 +356,6 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         almostEndingSoundPlayedRef.current = false;
         const effectIsCurrentlyActive = focusStartEffectTimeouts.current.length > 0;
         if (!isRunning && !effectIsCurrentlyActive) {
-            // REMOVED FOCUS POINT CHECK: No longer mandatory
-            // if (currentPhase === 'Work' && currentFocusPoints.length === 0) { alert('Por favor, adicione pelo menos um ponto de foco.'); return; }
-
             setInitialDuration(timeLeft); timerDeadlineRef.current = Date.now() + timeLeft * 1000; nextPhaseTriggeredRef.current = false;
             if (currentPhase === 'Work') {
                 setTargetMusicVolume(FOCUS_TARGET_VOLUME);
@@ -392,7 +390,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     }, [
         stopAlarmLoop, isRunning, currentPhase, timeLeft, playSound, currentSessionStartTime, isHyperfocusActive,
         clearFocusStartEffect, setInitialDuration, setCurrentSessionStartTime,
-        setActiveBgColorOverride, setIsRunning, setTargetMusicVolume, setShowExtensionOptions, // currentFocusPoints removed from deps
+        setActiveBgColorOverride, setIsRunning, setTargetMusicVolume, setShowExtensionOptions,
     ]);
 
     const resetTimer = useCallback(() => {

@@ -21,6 +21,7 @@ export const LONG_BREAK_BG_RUNNING = 'bg-gradient-to-br from-emerald-800 to-teal
 export const HISTORY_STORAGE_KEY = 'pomodoroHistory_v1';
 export const SETTINGS_STORAGE_KEY = 'pomodoroSettings_v1';
 export const BACKLOG_STORAGE_KEY = 'pomohero_backlog';
+export const CYCLE_COUNT_STORAGE_KEY = 'pomohero_cycle_count';
 
 export const DEFAULT_MUSIC_VOLUME = 0.5; // Default volume for music player
 export const MUSIC_VOLUME_STORAGE_KEY = 'pomohero_music_volume'; // Local storage key

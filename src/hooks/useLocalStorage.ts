@@ -1,28 +1,25 @@
 import { useState, useEffect } from 'react';
 
-// Improved loadFromLocalStorage within the hook
 function loadStoredValue<T>(key: string, defaultValue: T): T {
     try {
         const storedValue = localStorage.getItem(key);
         if (storedValue) {
             const parsedValue = JSON.parse(storedValue);
-            // Basic type check and structure check for objects
              if (typeof parsedValue === typeof defaultValue && parsedValue !== null) {
                  if (typeof defaultValue === 'object' && defaultValue !== null && !Array.isArray(defaultValue)) {
-                    // Ensure all default keys exist in the parsed value before merging
                     const defaultKeys = Object.keys(defaultValue);
                     const parsedKeys = Object.keys(parsedValue);
                     if (defaultKeys.every(k => parsedKeys.includes(k))) {
-                         return { ...defaultValue, ...parsedValue }; // Merge, parsed takes precedence
+                         return { ...defaultValue, ...parsedValue };
                     }
                  } else {
-                    return parsedValue; // Handles primitives, arrays, etc.
+                    return parsedValue;
                  }
              }
         }
     } catch (error) {
         console.error(`Error loading ${key} from localStorage:`, error);
-        localStorage.removeItem(key); // Clear corrupted data
+        localStorage.removeItem(key);
     }
     return defaultValue;
 }
