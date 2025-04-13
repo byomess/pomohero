@@ -1,5 +1,5 @@
 // src/App.tsx
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useState, useEffect, useRef
 import { PomodoroProvider, usePomodoro } from './contexts/PomodoroContext';
 import { TimerDisplay } from './components/Timer/TimerDisplay';
 import { ProgressCircle } from './components/Timer/ProgressCircle';
@@ -14,13 +14,63 @@ import { SettingsModal } from './components/Settings/SettingsModal';
 import { TimerAdjustControls } from './components/Timer/TimerAdjustControls';
 import { BacklogList } from './components/Backlog/BacklogList';
 import { MusicPlayer } from './components/MusicPlayer/MusicPlayer';
+import { AnimatePresence } from 'framer-motion'; // Import AnimatePresence
+import { CongratsModal } from './components/Modals/CongratsModal'; // Import o novo Modal
 
 const PomodoroLayout: React.FC = () => {
-    const { currentPhase, styles } = usePomodoro();
+    const { currentPhase, styles, isRunning } = usePomodoro();
     const isBreakPhase = currentPhase === 'Short Break' || currentPhase === 'Long Break';
 
+    // --- Lógica do Modal de Congratulação ---
+    const [showCongratsModal, setShowCongratsModal] = useState(false);
+    const previousIsRunning = useRef(isRunning); // Guarda o estado anterior de isRunning
+    const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref para o timeout
+
+    useEffect(() => {
+        const justStartedBreakTimer =
+            isRunning &&                     // O timer está rodando AGORA
+            !previousIsRunning.current &&    // O timer NÃO estava rodando ANTES
+            isBreakPhase;                    // Estamos em uma fase de pausa
+
+        if (justStartedBreakTimer) {
+            setTimeout(() => {
+                setShowCongratsModal(true);
+
+                // Limpa qualquer timeout anterior (segurança extra)
+                if (modalTimeoutRef.current) {
+                    clearTimeout(modalTimeoutRef.current);
+                }
+    
+                // Define um timeout para esconder o modal após 3 segundos
+                modalTimeoutRef.current = setTimeout(() => {
+                    setShowCongratsModal(false);
+                    modalTimeoutRef.current = null; // Limpa a ref do timeout
+                }, 5000); // 3000ms = 3 segundos
+            }, 500);
+        }
+
+        // Atualiza o estado anterior de isRunning para a próxima renderização
+        previousIsRunning.current = isRunning;
+
+        // Função de limpeza: limpa o timeout se o componente desmontar
+        // ou se as dependências (isRunning, currentPhase) mudarem antes do timeout terminar.
+        return () => {
+            if (modalTimeoutRef.current) {
+                clearTimeout(modalTimeoutRef.current);
+            }
+        };
+    // Monitora mudanças em isRunning e currentPhase
+    }, [isRunning, currentPhase, isBreakPhase]);
+    // --- Fim da Lógica do Modal ---
+
     return (
-        <div className={`h-screen w-full flex flex-col items-center justify-start py-6 md:py-8 px-4 ${styles.finalBgColor} transition-colors duration-200 ease-in-out relative font-sans overflow-hidden`}>
+        <div className={`
+            h-screen w-full flex flex-col items-center justify-start
+            py-6 md:py-8 px-4
+            ${styles.finalBgColor}
+            transition-colors duration-200 ease-in-out
+            relative font-sans overflow-hidden
+        `}>
             <SettingsButton />
             <div className="w-full max-w-7xl flex-1 min-h-0 flex flex-col lg:flex-row justify-center items-stretch gap-6 md:gap-8 pt-4">
 
@@ -31,7 +81,7 @@ const PomodoroLayout: React.FC = () => {
                 </div>
 
                 {/* --- Coluna Central (Timer) --- */}
-                <div className={`
+                 <div className={`
                     w-full lg:flex-1 p-6 md:p-8 rounded-3xl shadow-2xl backdrop-blur-sm bg-black/25
                     ${styles.textColor} order-first lg:order-none flex flex-col
                     border-2 ${styles.timerHighlightBorderColor} transition-colors duration-300 ease-in-out
@@ -66,6 +116,11 @@ const PomodoroLayout: React.FC = () => {
                 </div>
             </div>
             <SettingsModal />
+
+            {/* Renderização Condicional do Modal com Animação */}
+            <AnimatePresence>
+                {showCongratsModal && <CongratsModal />}
+            </AnimatePresence>
         </div>
     );
 };
