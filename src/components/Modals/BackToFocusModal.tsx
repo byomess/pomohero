@@ -26,7 +26,10 @@ const motivationalPhrases = [
     "O caminho é este, e a hora é agora.",
     "Comece onde você está, use o que você tem, faça o que você pode.",
     "Lembre-se: feito é melhor que perfeito.",
-
+    "Avante, guereiro! O foco é seu aliado.",
+    "Você não está sozinho nessa jornada. Eu estou aqui com você.",
+    "Você tem sonhos que anseia realizar, não esqueça disso.",
+    "Traga mais essa vitória pra conta, você merece."
 ];
 
 // Funções para obter valores aleatórios
