@@ -1,8 +1,7 @@
 // src/components/Modals/CongratsModal.tsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-// Voltando para BsAward ou pode escolher outro como BsStar ou BsTrophy
-import { BsAward } from 'react-icons/bs';
+import { PiLightningBold } from 'react-icons/pi';
 
 // Lista de Títulos
 const backToFocusTitles = [
@@ -90,7 +89,7 @@ export const BackToFocusModal: React.FC = () => {
                 }}
             >
                  {/* Ícone */}
-                <BsAward
+                <PiLightningBold
                     className="w-16 h-16 text-emerald-300 mx-auto mb-5 filter drop-shadow(0 2px 4px rgba(16,185,129,0.3))"
                 />
                 {/* Título Aleatório */}
