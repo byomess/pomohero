@@ -33,6 +33,7 @@ const backToFocusTitles = [
 // Lista de Frases (mantida)
 const motivationalPhrases = [
     "Lembre-se: a dor da disciplina é menor que a dor do arrependimento.",
+    "Lembre-se: feito é melhor que perfeito.",
     "A disciplina é a ponte entre metas e realizações.",
     "Você é mais forte do que pensa. Traga mais esse foco pra conta.",
     "A disciplina é o caminho para a liberdade, e não uma prisão.",
@@ -43,8 +44,7 @@ const motivationalPhrases = [
     "Não vai ser um bicho de sete cabeças, você sabe disso.",
     "O caminho é este, e a hora é agora.",
     "Comece onde você está, use o que você tem, faça o que você pode.",
-    "Lembre-se: feito é melhor que perfeito.",
-    "Avante, guereiro! O foco é seu aliado.",
+    "Avante, guereiro! O foco é seu aliado, e não seu inimigo.",
     "Você não está sozinho nessa jornada. Eu estou aqui com você.",
     "Você tem sonhos que anseia realizar, não esqueça disso.",
     "Traga mais essa vitória pra conta, você merece."
