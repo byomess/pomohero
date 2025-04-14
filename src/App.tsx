@@ -16,52 +16,64 @@ import { BacklogList } from './components/Backlog/BacklogList';
 import { MusicPlayer } from './components/MusicPlayer/MusicPlayer';
 import { AnimatePresence } from 'framer-motion'; // Import AnimatePresence
 import { CongratsModal } from './components/Modals/CongratsModal'; // Import o novo Modal
+import { BackToFocusModal } from './components/Modals/BackToFocusModal';
 
 const PomodoroLayout: React.FC = () => {
     const { currentPhase, styles, isRunning } = usePomodoro();
     const isBreakPhase = currentPhase === 'Short Break' || currentPhase === 'Long Break';
+    const isFocusPhase = currentPhase === 'Work';
 
     // --- Lógica do Modal de Congratulação ---
     const [showCongratsModal, setShowCongratsModal] = useState(false);
+    const [showBackToFocusModal, setShowBackToFocusModal] = useState(false);
     const previousIsRunning = useRef(isRunning); // Guarda o estado anterior de isRunning
     const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref para o timeout
 
     useEffect(() => {
-        const justStartedBreakTimer =
-            isRunning &&                     // O timer está rodando AGORA
-            !previousIsRunning.current &&    // O timer NÃO estava rodando ANTES
-            isBreakPhase;                    // Estamos em uma fase de pausa
+        const justEnteredBreakPhase =
+            previousIsRunning.current &&
+            isBreakPhase;           
+        
+        const justEnteredFocusPhase =
+            previousIsRunning.current &&
+            isFocusPhase;
 
-        if (justStartedBreakTimer) {
+        if (justEnteredBreakPhase) {
             setTimeout(() => {
                 setShowCongratsModal(true);
 
-                // Limpa qualquer timeout anterior (segurança extra)
                 if (modalTimeoutRef.current) {
                     clearTimeout(modalTimeoutRef.current);
                 }
     
-                // Define um timeout para esconder o modal após 3 segundos
                 modalTimeoutRef.current = setTimeout(() => {
                     setShowCongratsModal(false);
-                    modalTimeoutRef.current = null; // Limpa a ref do timeout
-                }, 5000); // 3000ms = 3 segundos
+                    modalTimeoutRef.current = null;
+                }, 5000);
+            }, 500);
+        } else if (justEnteredFocusPhase) {
+            setTimeout(() => {
+                setShowBackToFocusModal(true);
+
+                if (modalTimeoutRef.current) {
+                    clearTimeout(modalTimeoutRef.current);
+                }
+    
+                modalTimeoutRef.current = setTimeout(() => {
+                    setShowBackToFocusModal(false);
+                    modalTimeoutRef.current = null;
+                }, 5000);
             }, 500);
         }
 
-        // Atualiza o estado anterior de isRunning para a próxima renderização
         previousIsRunning.current = isRunning;
 
-        // Função de limpeza: limpa o timeout se o componente desmontar
-        // ou se as dependências (isRunning, currentPhase) mudarem antes do timeout terminar.
         return () => {
             if (modalTimeoutRef.current) {
                 clearTimeout(modalTimeoutRef.current);
             }
         };
-    // Monitora mudanças em isRunning e currentPhase
-    }, [isRunning, currentPhase, isBreakPhase]);
-    // --- Fim da Lógica do Modal ---
+    }, [isRunning, currentPhase, isBreakPhase, isFocusPhase]);
 
     return (
         <div className={`
@@ -120,6 +132,7 @@ const PomodoroLayout: React.FC = () => {
             {/* Renderização Condicional do Modal com Animação */}
             <AnimatePresence>
                 {showCongratsModal && <CongratsModal />}
+                {showBackToFocusModal && <BackToFocusModal />}
             </AnimatePresence>
         </div>
     );

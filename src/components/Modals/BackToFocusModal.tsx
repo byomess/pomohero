@@ -5,49 +5,15 @@ import { motion } from 'framer-motion';
 import { BsAward } from 'react-icons/bs';
 
 // Lista de Títulos
-const congratsTitles = [
-    "Foco Concluído!",
-    "Mandou Bem!",
-    "Pausa Merecida!",
-    "Sucesso!",
-    "Ótimo Trabalho!",
-    "Missão Cumprida!",
-    "Hora de Relaxar!",
-    "Excelente Esforço!",
-    "Você Conseguiu!",
-    "Etapa Finalizada!",
-    "Bom Descanso!",
-    "Ciclo Completo!",
-    "Parabéns!",
-    "Recarregue as Energias!",
-    "Que Desempenho!",
-    "Tempo de Pausa!",
-    "Conquista!",
-    "Muito Bom!",
-    "Desconecte um Pouco!",
-    "Objetivo Atingido!",
+const backToFocusTitles = [
+    "Bem-vindo de volta!",
+    "Aí vem o campeão!",
+    "Hora de brilhar!",
 ];
 
 // Lista de Frases (mantida)
 const motivationalPhrases = [
-    "Excelente trabalho! Você merece esta pausa para recarregar.",
-    "Foco notável! Hora de relaxar um pouco a mente.",
-    "Mandou bem! Aproveite seu merecido descanso.",
-    "Sessão produtiva concluída! Respire fundo.",
-    "Parabéns pelo esforço! Sua pausa chegou.",
-    "Continue assim! Pequenas pausas geram grandes resultados.",
-    "Impressionante! Use este tempo para se reenergizar.",
-    "O progresso é feito passo a passo.",
-    "Você está no caminho certo! Aproveite a pausa.",
-    "Que concentração! Agora, um momento para você.",
-    "Bom trabalho! Pausar também é parte do processo.",
-    "Respire fundo, guerreiro, e sinta a glória da sua vitória.",
-    "Sua dedicação é notável. Desfrute do intervalo.",
-    "Foco finalizado com sucesso! Relaxe e celebre.",
-    "Energia bem gasta! Hora de recuperar.",
-    "Você está perto. Continue assim!",
-    "Seu cérebro agradece! Aproveite este respiro.",
-    "Conquista desbloqueada: Foco Completo! Descanse.",
+    "Lembre-se: a dor da disciplina é menor que a dor do arrependimento.",
 ];
 
 // Funções para obter valores aleatórios
@@ -56,9 +22,9 @@ const getRandomElement = <T,>(arr: T[]): T => {
     return arr[randomIndex];
 };
 
-export const CongratsModal: React.FC = () => {
+export const BackToFocusModal: React.FC = () => {
     // Seleciona um título e uma frase aleatórios na montagem
-    const [selectedTitle] = useState(() => getRandomElement(congratsTitles));
+    const [selectedTitle] = useState(() => getRandomElement(backToFocusTitles));
     const [selectedPhrase] = useState(() => getRandomElement(motivationalPhrases));
 
     // Revertendo para o estilo elegante com fundo transparente/blur
