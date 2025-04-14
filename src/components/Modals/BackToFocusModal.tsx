@@ -7,9 +7,27 @@ import { BsAward } from 'react-icons/bs';
 // Lista de Títulos
 const backToFocusTitles = [
     "Bem-vindo de volta!",
-    "Aí vem o campeão!",
-    "Hora de brilhar!",
+    "Aí vem o campeão",
+    "Hora de brilhar",
     "Você voltou!",
+    "Sem margem de erro",
+    "Nova missão",
+    "Traga o foco",
+    "Vença aqui e agora",
+    "Conquiste o dia",
+    "Capacitado e pronto",
+    "Sinto sua energia",
+    "Melhor do que nunca",
+    "Você consegue",
+    "Voce pode sim",
+    "A hora é agora",
+    "Comece, continue e vença",
+    "Começar é o primeiro passo",
+    "Venha comigo",
+    "Estou aqui com você",
+    "Você é capaz",
+    "Você é forte",
+    "Você é incrível",
 ];
 
 // Lista de Frases (mantida)
