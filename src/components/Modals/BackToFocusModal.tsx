@@ -9,11 +9,24 @@ const backToFocusTitles = [
     "Bem-vindo de volta!",
     "Aí vem o campeão!",
     "Hora de brilhar!",
+    "Você voltou!",
 ];
 
 // Lista de Frases (mantida)
 const motivationalPhrases = [
     "Lembre-se: a dor da disciplina é menor que a dor do arrependimento.",
+    "A disciplina é a ponte entre metas e realizações.",
+    "Você é mais forte do que pensa. Traga mais esse foco pra conta.",
+    "A disciplina é o caminho para a liberdade, e não uma prisão.",
+    "Com a disciplina, você pode conquistar qualquer coisa.",
+    "Vá em frente, você está no caminho certo.",
+    "Seu eu do futuro vai agradecer por isso, acredite.",
+    "Sua capacidade de foco é sua maior força. Use-a agora.",
+    "Não vai ser um bicho de sete cabeças, você sabe disso.",
+    "O caminho é este, e a hora é agora.",
+    "Comece onde você está, use o que você tem, faça o que você pode.",
+    "Lembre-se: feito é melhor que perfeito.",
+
 ];
 
 // Funções para obter valores aleatórios
