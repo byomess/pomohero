@@ -26,14 +26,15 @@ const PomodoroLayout: React.FC = () => {
     // --- Lógica do Modal de Congratulação ---
     const [showCongratsModal, setShowCongratsModal] = useState(false);
     const [showBackToFocusModal, setShowBackToFocusModal] = useState(false);
+    const [userInteracted, setUserInteracted] = useState(false); // Estado para rastrear interação do usuário
     const previousIsRunning = useRef(isRunning); // Guarda o estado anterior de isRunning
     const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref para o timeout
 
     useEffect(() => {
         const justEnteredBreakPhase =
             previousIsRunning.current &&
-            isBreakPhase;           
-        
+            isBreakPhase;
+
         const justEnteredFocusPhase =
             previousIsRunning.current &&
             isFocusPhase;
@@ -45,7 +46,7 @@ const PomodoroLayout: React.FC = () => {
                 if (modalTimeoutRef.current) {
                     clearTimeout(modalTimeoutRef.current);
                 }
-    
+
                 modalTimeoutRef.current = setTimeout(() => {
                     setShowCongratsModal(false);
                     modalTimeoutRef.current = null;
@@ -58,7 +59,7 @@ const PomodoroLayout: React.FC = () => {
                 if (modalTimeoutRef.current) {
                     clearTimeout(modalTimeoutRef.current);
                 }
-    
+
                 modalTimeoutRef.current = setTimeout(() => {
                     setShowBackToFocusModal(false);
                     modalTimeoutRef.current = null;
@@ -75,7 +76,7 @@ const PomodoroLayout: React.FC = () => {
         };
     }, [isRunning, currentPhase, isBreakPhase, isFocusPhase]);
 
-    return (
+    return userInteracted ? (
         <div className={`
             h-screen w-full flex flex-col items-center justify-start
             py-6 md:py-8 px-4
@@ -93,7 +94,7 @@ const PomodoroLayout: React.FC = () => {
                 </div>
 
                 {/* --- Coluna Central (Timer) --- */}
-                 <div className={`
+                <div className={`
                     w-full lg:flex-1 p-6 md:p-8 rounded-3xl shadow-2xl backdrop-blur-sm bg-black/25
                     ${styles.textColor} order-first lg:order-none flex flex-col
                     border-2 ${styles.timerHighlightBorderColor} transition-colors duration-300 ease-in-out
@@ -103,12 +104,12 @@ const PomodoroLayout: React.FC = () => {
                         <div className="w-64 h-64 md:w-72 md:h-72 mx-auto rounded-full flex items-center justify-center shadow-inner relative">
                             <ProgressCircle />
                             <div className="absolute w-[85%] h-[85%] bg-gradient-to-br from-[rgba(255,255,255,0.05)] to-[rgba(255,255,255,0.02)] rounded-full shadow-lg flex items-center justify-center">
-                                 <TimerDisplay />
+                                <TimerDisplay />
                             </div>
                         </div>
-                         <TimerAdjustControls />
+                        <TimerAdjustControls />
                     </div>
-                     <div className="space-y-3 mb-6 flex-1 flex flex-col min-h-0">
+                    <div className="space-y-3 mb-6 flex-1 flex flex-col min-h-0">
                         {currentPhase === 'Work' && <FocusInput />}
                         {isBreakPhase && (
                             <>
@@ -117,14 +118,14 @@ const PomodoroLayout: React.FC = () => {
                                     <NextFocusInput />
                                 </div>
                             </>
-                         )}
+                        )}
                     </div>
                     <TimerControls />
                 </div>
 
                 {/* --- Coluna Direita (Histórico) --- */}
                 <div className="w-full lg:flex-1 order-3 lg:order-none">
-                     <div className="h-full"> <HistoryList /> </div>
+                    <div className="h-full"> <HistoryList /> </div>
                 </div>
             </div>
             <SettingsModal />
@@ -135,11 +136,20 @@ const PomodoroLayout: React.FC = () => {
                 {showBackToFocusModal && <BackToFocusModal />}
             </AnimatePresence>
         </div>
-    );
+    ) : (
+        <div className="h-screen w-full flex items-center justify-center bg-slate-900">
+            <button
+                className="text-white border-2 rounded-xl text-lg px-4 py-2 hover:bg-white/30 transition duration-300 ease-in-out cursor-pointer"
+                onClick={() => setUserInteracted(true)}
+            >
+                começar
+            </button>
+        </div>
+    )
 };
 
 const App: React.FC = () => {
-    return ( <PomodoroProvider> <PomodoroLayout /> </PomodoroProvider> );
+    return (<PomodoroProvider> <PomodoroLayout /> </PomodoroProvider>);
 };
 
 export default App;

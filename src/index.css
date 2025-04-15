@@ -1,4 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap');
+
 @import "tailwindcss";
+
+@theme {
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-display: 'Cormorant Garamond', serif;
+}
 
 @layer utilities {
   .text-shadow-sm {
@@ -19,7 +26,8 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Cormorant Garamond", serif;
+  font-optical-sizing: auto;
   background-color: #1e1e2f; /* Dark background */
   color: #ffffff; /* Light text color */
   margin: 0;

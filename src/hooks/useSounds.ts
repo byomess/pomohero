@@ -17,7 +17,7 @@ const soundMap = {
     select: new Howl({ src: ['/sounds/select.ogg', '/sounds/select.mp3'], volume: 0.5 }),
     confirm: new Howl({ src: ['/sounds/confirm.ogg', '/sounds/confirm.wav'], volume: 0.5 }),
     remove: new Howl({ src: ['/sounds/remove.ogg', '/sounds/remove.mp3'], volume: 0.5 }),
-    focusStart: new Howl({ src: ['/sounds/focus_start.ogg', '/sounds/focus_start.wav'], volume: 0.5 }),
+    focusStart: new Howl({ src: ['/sounds/focus_start.ogg', '/sounds/focus_start.wav'], volume: 0.3 }),
     focusAlmostEnding: new Howl({ src: ['/sounds/focus_almost_ending.ogg', '/sounds/focus_almost_ending.mp3', '/sounds/focus_almost_ending.wav'], volume: 0.2 }),
     hyperfocus: new Howl({ src: ['/sounds/hyperfocus.ogg', '/sounds/hyperfocus.mp3'], volume: 0.5 }),
 };
