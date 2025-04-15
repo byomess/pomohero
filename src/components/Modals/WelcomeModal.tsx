@@ -20,16 +20,22 @@ const welcomeBacks = [
     { id: 'wb-2', title: "aí está você", description: "com vontade de vencer" },
     { id: 'wb-3', title: "o dever o chama", description: "mas não se preocupe, estou aqui" },
     { id: 'wb-4', title: "atordoado pela luta", description: "mas ainda disposto a lutar" },
-    { id: 'wb-5', title: "você é forte", description: "e nada pode te parar" },
+    { id: 'wb-5', title: "você é forte", description: "e nada vai te parar" },
     { id: 'wb-6', title: "conte comigo", description: "mais uma vez" },
     { id: 'wb-7', title: "acredite", description: "você já está vencendo" },
+    { id: 'wb-8', title: "você", description: "me surpreende a cada retorno" },
+    { id: 'wb-9', title: "inacreditável", description: "você é um verdadeiro guerreiro" },
+    { id: 'wb-10', title: "você é incrível", description: "e eu estou aqui para te apoiar" },
+    { id: 'wb-11', title: "você", description: "é simplesmente surpreendente" },
+    { id: 'wb-11', title: "você", description: "é simplesmente incrível" },
+    { id: 'wb-11', title: "é admirável", description: "sua determinação" },
 ];
 
 const welcomeSteps = [
-    { id: 'ws-1', title: "olá", description: "permita-me me apresentar..." },
+    { id: 'ws-1', title: "olá", description: "permita-me me apresentar" },
     { id: 'ws-2', title: "muito prazer", description: "sou pomohero" },
-    { id: 'ws-3', title: "confie em mim", description: "sou o herói do foco para muitos" },
-    { id: 'ws-4', title: "e se me permitir", description: "posso ser o seu heroi também" },
+    { id: 'ws-3', title: "comigo", description: "você conhecerá novos limites" },
+    { id: 'ws-4', title: "te guiarei", description: "através do caminho do sucesso" },
 ];
 
 // --- Funções Auxiliares ---

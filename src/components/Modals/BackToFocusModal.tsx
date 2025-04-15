@@ -1,105 +1,137 @@
 // src/components/Modals/BackToFocusModal.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PiLightningBold } from 'react-icons/pi'; // Using the specified icon
+import { PiLightningBold } from 'react-icons/pi'; // Ícone específico
 
-// --- Constantes (Matching previous modals) ---
-const BACK_TO_FOCUS_DURATION_MS = 4800; // Duration for this modal's animation
+// --- Constantes (mantidas como no seu código original) ---
+const BACK_TO_FOCUS_DURATION_MS = 4800; 
 const TRANSITION_DURATION_S = 0.5;
 const FINAL_BACKGROUND_OPACITY = 0.1;
 
-// Colors for Animation (Matching previous modals)
+// Cores de Animação
 const INITIAL_TITLE_COLOR = "#eeeeee";
 const FINAL_TITLE_COLOR = "#ffffff";
 const INITIAL_DESC_COLOR = "#eeeeee";
 const FINAL_DESC_COLOR = "#ffffff";
-const INITIAL_ICON_COLOR = "#eeeeee"; // Start icon light gray
-const FINAL_ICON_COLOR = "#ffffff";    // End icon white
+const INITIAL_ICON_COLOR = "#eeeeee"; 
+const FINAL_ICON_COLOR = "#ffffff";    
 
-// --- Dados (Text converted to lowercase) ---
-
-// Lista de Títulos (lowercase)
-const backToFocusTitles = [
-    "bem-vindo de volta!",
-    "aí vem o campeão",
-    "hora de brilhar",
-    "você voltou!",
-    "sem margem de erro",
-    "nova missão",
-    "traga o foco",
-    "vença aqui e agora",
-    "conquiste o dia",
-    "capacitado e pronto",
-    "sinto sua energia",
-    "melhor do que nunca",
-    "você consegue",
-    "voce pode sim",
-    "a hora é agora",
-    "comece, continue e vença",
-    "começar é o primeiro passo",
-    "venha comigo",
-    "estou aqui com você",
-    "você é capaz",
-    "você é forte",
-    "você é incrível",
+// --- Agora, UMA só lista de objetos ---
+const backToFocusData = [
+  {
+    title: "lembre-se",
+    phrase: "a dor da disciplina é menor que a dor do arrependimento",
+  },
+  {
+    title: "lembre-se",
+    phrase: "feito é melhor que perfeito",
+  },
+  {
+    title: "a disciplina",
+    phrase: "é a ponte entre metas e realizações",
+  },
+  {
+    title: "você",
+    phrase: "é mais forte do que pensa",
+  },
+  {
+    title: "traga",
+    phrase: "mais esse foco pra conta"
+  },
+  {
+    title: "a disciplina",
+    phrase: "é o caminho para a liberdade, e não uma prisão",
+  },
+  {
+    title: "com a disciplina",
+    phrase: "você pode conquistar qualquer coisa",
+  },
+  {
+    title: "vá em frente",
+    phrase: "você está no caminho certo",
+  },
+  {
+    title: "seu eu do futuro",
+    phrase: "vai agradecer por isso, acredite",
+  },
+  {
+    title: "sua maior força",
+    phrase: "é a sua capacidade de foco",
+  },
+  {
+    title: "não vai",
+    phrase: "ser um bicho de sete cabeças, você sabe disso",
+  },
+  {
+    title: "o caminho é este",
+    phrase: "e a hora é agora",
+  },
+  {
+    title: "comece onde você está",
+    phrase: "use o que você tem, faça o que você pode",
+  },
+  {
+    title: "avante, guereiro",
+    phrase: "o foco é seu aliado, e não seu inimigo",
+  },
+  {
+    title: "você não está sozinho",
+    phrase: "nessa jornada. eu estou aqui com você",
+  },
+  {
+    title: "você tem sonhos",
+    phrase: "que anseia realizar, não esqueça disso",
+  },
+  {
+    title: "traga",
+    phrase: "mais essa vitória pra conta, você merece",
+  },
+  {
+    title: "não vai",
+    phrase: "ser tão complicado assim, eu prometo",
+  },
+  {
+    title: "começar",
+    phrase: "é o primeiro passo",
+  }
 ];
 
-// Lista de Frases (lowercase)
-const motivationalPhrases = [
-    "lembre-se: a dor da disciplina é menor que a dor do arrependimento.",
-    "lembre-se: feito é melhor que perfeito.",
-    "a disciplina é a ponte entre metas e realizações.",
-    "você é mais forte do que pensa. traga mais esse foco pra conta.",
-    "a disciplina é o caminho para a liberdade, e não uma prisão.",
-    "com a disciplina, você pode conquistar qualquer coisa.",
-    "vá em frente, você está no caminho certo.",
-    "seu eu do futuro vai agradecer por isso, acredite.",
-    "sua capacidade de foco é sua maior força. use-a agora.",
-    "não vai ser um bicho de sete cabeças, você sabe disso.",
-    "o caminho é este, e a hora é agora.",
-    "comece onde você está, use o que você tem, faça o que você pode.",
-    "avante, guereiro! o foco é seu aliado, e não seu inimigo.",
-    "você não está sozinho nessa jornada. eu estou aqui com você.",
-    "você tem sonhos que anseia realizar, não esqueça disso.",
-    "traga mais essa vitória pra conta, você merece.",
-    "não vai ser tão complicado assim, eu prometo.",
-];
-
-// Funções para obter valores aleatórios
+// Função para obter valores aleatórios
 const getRandomElement = <T,>(arr: T[]): T => {
-    if (arr.length === 0) return {} as T;
+    if (arr.length === 0) {
+      return {} as T;
+    }
     const randomIndex = Math.floor(Math.random() * arr.length);
     return arr[randomIndex];
 };
 
 // --- Tipos de Props ---
 interface BackToFocusModalProps {
-     onExited?: () => void; // Callback when exit animation completes
+     onExited?: () => void; // Callback quando a animação de saída termina
 }
 
 export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) => {
-    // Select random title and phrase on mount
-    const [selectedTitle] = useState(() => getRandomElement(backToFocusTitles));
-    const [selectedPhrase] = useState(() => getRandomElement(motivationalPhrases));
-    // State to control visibility for exit animation
+    // Seleciona UM objeto aleatório (title + phrase)
+    const [selectedItem] = useState(() => getRandomElement(backToFocusData));
+
+    // Controla visibilidade para animação de saída
     const [showModal, setShowModal] = useState(true);
 
-    // Timer to close the modal automatically
+    // Timer para fechar automaticamente
     useEffect(() => {
         const timerId = setTimeout(() => {
-            setShowModal(false); // Trigger exit animation
+            setShowModal(false); 
         }, BACK_TO_FOCUS_DURATION_MS);
 
-        return () => clearTimeout(timerId); // Cleanup timer
-    }, []); // Runs only once on mount
+        return () => clearTimeout(timerId);
+    }, []);
 
-    // --- Animation Variants (Copied from previous modals) ---
-
+    // --- Animações ---
     const modalContainerVariants = {
         initial: { opacity: 0, y: 50, scale: 0.95 },
         animate: {
             opacity: 1,
-            y: [0, -30], // Fixed upward movement
+            y: [0, -30], 
             scale: 1,
             transition: {
                 opacity: { duration: TRANSITION_DURATION_S, ease: "easeOut" },
@@ -175,27 +207,24 @@ export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) 
     return (
         <AnimatePresence onExitComplete={onExited}>
             {showModal && (
-                // Overlay (Matching style)
                 <motion.div
-                    key="backtofocus-modal-overlay" // Unique key
+                    key="backtofocus-modal-overlay"
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg p-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: TRANSITION_DURATION_S * 0.6, ease: 'linear' }}
                 >
-                    {/* Caixa Container do Modal (Matching structure and style) */}
                     <motion.div
-                        key="backtofocus-modal-container" // Unique key
+                        key="backtofocus-modal-container"
                         className="relative max-w-sm w-full rounded-2xl shadow-lg text-center overflow-hidden"
                         variants={modalContainerVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
                     >
-                        {/* Elemento de Fundo (Matching structure and style) */}
                         <motion.div
-                             key="backtofocus-modal-background" // Unique key
+                             key="backtofocus-modal-background"
                              className="absolute inset-0 -z-10 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg"
                              variants={backgroundVariants}
                              initial="initial"
@@ -203,9 +232,7 @@ export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) 
                              exit="exit"
                         />
 
-                        {/* Conteúdo Interno (Matching structure and style) */}
                         <div className="p-4 pt-6 relative z-10">
-                            {/* Ícone Animado */}
                             <motion.div
                                 key="backtofocus-icon-wrapper"
                                 variants={iconVariants}
@@ -213,40 +240,37 @@ export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) 
                                 animate="animate"
                                 exit="exit"
                             >
-                                <PiLightningBold // Using the specified icon
-                                    className="w-16 h-16 mx-auto mb-5 filter drop-shadow(0 2px 4px rgba(255,255,255,0.1))" // Adjusted shadow
+                                <PiLightningBold
+                                    className="w-16 h-16 mx-auto mb-5 filter drop-shadow(0 2px 4px rgba(255,255,255,0.1))"
                                 />
                             </motion.div>
 
-                            {/* Área de Texto */}
                             <motion.div
-                                key="backtofocus-content" // Unique key
+                                key="backtofocus-content"
                                 initial={{ opacity: 1 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.15 }}
                                 className="min-h-[90px] flex flex-col justify-center"
                             >
-                                {/* Título com animação de cor (lowercase) */}
                                 <motion.h2
-                                    className="text-2xl font-medium mb-2" // Matching style
+                                    className="text-2xl font-medium mb-2"
                                     variants={titleVariants}
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
                                 >
-                                    {selectedTitle}
+                                    {selectedItem.title}
                                 </motion.h2>
 
-                                {/* Descrição com animação de cor (lowercase) */}
                                 <motion.p
-                                    className="text-md leading-relaxed font-light" // Matching style
+                                    className="text-md leading-relaxed font-light"
                                     variants={descriptionVariants}
                                     initial="initial"
                                     animate="animate"
                                     exit="exit"
                                 >
-                                    {selectedPhrase}
+                                    {selectedItem.phrase}
                                 </motion.p>
                             </motion.div>
                         </div>

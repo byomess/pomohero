@@ -69,3 +69,11 @@ export const HYPERFOCUS_PROGRESS = 'bg-red-600';              // Slightly darker
 export const HYPERFOCUS_ACCENT_RING = 'ring-red-600';           // Slightly darker ring (600 instead of 500)
 export const HYPERFOCUS_HIST_BORDER_RUNNING = 'border-red-700/50'; // Darker history border
 export const HYPERFOCUS_HIST_BORDER_PAUSED = 'border-red-800/50'; // Even darker paused history border
+
+export const INTRO_TRACK_ID = 'm-ploom-lab';
+export const INTRO_START_TIME_NEW_USER = 124; // seconds
+export const WELCOME_MODAL_DELAY_NEW_USER = 16500; // milliseconds
+export const INTRO_START_TIME_RETURNING_USER = 136; // seconds
+export const WELCOME_MODAL_DELAY_RETURNING_USER = 4800; // milliseconds
+export const INTRO_INITIAL_VOLUME = 0.2; // 0.0 to 1.0
+export const INTRO_NORMAL_VOLUME = 0.5; // 0.0 to 1.0
