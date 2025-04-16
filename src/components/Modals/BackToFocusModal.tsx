@@ -1,14 +1,11 @@
-// src/components/Modals/BackToFocusModal.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PiLightningBold } from 'react-icons/pi'; // Ícone específico
+import { PiLightningBold } from 'react-icons/pi';
 
-// --- Constantes (mantidas como no seu código original) ---
 const BACK_TO_FOCUS_DURATION_MS = 4800; 
 const TRANSITION_DURATION_S = 0.5;
 const FINAL_BACKGROUND_OPACITY = 0.1;
 
-// Cores de Animação
 const INITIAL_TITLE_COLOR = "#eeeeee";
 const FINAL_TITLE_COLOR = "#ffffff";
 const INITIAL_DESC_COLOR = "#eeeeee";
@@ -16,7 +13,6 @@ const FINAL_DESC_COLOR = "#ffffff";
 const INITIAL_ICON_COLOR = "#eeeeee"; 
 const FINAL_ICON_COLOR = "#ffffff";    
 
-// --- Agora, UMA só lista de objetos ---
 const backToFocusData = [
   {
     title: "lembre-se",
@@ -27,12 +23,16 @@ const backToFocusData = [
     phrase: "feito é melhor que perfeito",
   },
   {
+    title: "o movimento",
+    phrase: "sempre tráz a mudança",
+  },
+  {
     title: "a disciplina",
-    phrase: "é a ponte entre metas e realizações",
+    phrase: "é a ponte entre metas e conquistas",
   },
   {
     title: "você",
-    phrase: "é mais forte do que pensa",
+    phrase: "é mais forte do que imagina",
   },
   {
     title: "traga",
@@ -56,11 +56,11 @@ const backToFocusData = [
   },
   {
     title: "sua maior força",
-    phrase: "é a sua capacidade de foco",
+    phrase: "é a sua determinação",
   },
   {
-    title: "não vai",
-    phrase: "ser um bicho de sete cabeças, você sabe disso",
+    title: "você sabe disso",
+    phrase: "não vai ser um bicho de sete cabeças",
   },
   {
     title: "o caminho é este",
@@ -75,25 +75,57 @@ const backToFocusData = [
     phrase: "o foco é seu aliado, e não seu inimigo",
   },
   {
-    title: "você não está sozinho",
-    phrase: "nessa jornada. eu estou aqui com você",
+    title: "nessa jornada",
+    phrase: "você não está sozinho. eu estou aqui com você",
   },
   {
     title: "você tem sonhos",
-    phrase: "que anseia realizar, não esqueça disso",
+    phrase: "que anseia realizar, lembra?",
   },
   {
     title: "traga",
-    phrase: "mais essa vitória pra conta, você merece",
+    phrase: "mais essa vitória pra conta",
   },
   {
-    title: "não vai",
-    phrase: "ser tão complicado assim, eu prometo",
+    title: "eu prometo",
+    phrase: "não vai ser tão difícil assim",
   },
   {
     title: "começar",
     phrase: "é o primeiro passo",
-  }
+  },
+  {
+    title: "você consegue",
+    phrase: "mesmo que pareça difícil agora"
+  },
+  {
+    title: "é só isso",
+    phrase: "um passo, um foco, uma vitória"
+  },
+  {
+    title: "o que importa",
+    phrase: "é continuar — mesmo devagar"
+  },
+  {
+    title: "uma tarefa por vez",
+    phrase: "é assim que se constrói um império"
+  },
+  {
+    title: "tire o peso das costas",
+    phrase: "é só focar no agora"
+  },
+  {
+    title: "isso aqui é um treino",
+    phrase: "e cada sessão te fortalece"
+  },
+  {
+    title: "não esquece",
+    phrase: "eu tô aqui com você"
+  },
+  {
+    title: "isso é coragem",
+    phrase: "começar mesmo sem vontade"
+  },
 ];
 
 // Função para obter valores aleatórios
@@ -156,7 +188,7 @@ export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) 
     };
 
     const backgroundVariants = {
-        initial: { opacity: 0.8 },
+        initial: { opacity: 1 },
         animate: {
             opacity: [0.8, FINAL_BACKGROUND_OPACITY],
             transition: {
@@ -210,10 +242,10 @@ export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) 
                 <motion.div
                     key="backtofocus-modal-overlay"
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg p-4"
-                    initial={{ opacity: 0 }}
+                    initial={{ opacity: 0.4 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: TRANSITION_DURATION_S * 0.6, ease: 'linear' }}
+                    transition={{ duration: TRANSITION_DURATION_S * 1, ease: 'linear' }}
                 >
                     <motion.div
                         key="backtofocus-modal-container"
@@ -225,7 +257,7 @@ export const BackToFocusModal: React.FC<BackToFocusModalProps> = ({ onExited }) 
                     >
                         <motion.div
                              key="backtofocus-modal-background"
-                             className="absolute inset-0 -z-10 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg"
+                             className="absolute inset-0 -z-10 rounded-2xl bg-white/50 backdrop-blur-md shadow-lg"
                              variants={backgroundVariants}
                              initial="initial"
                              animate="animate"

@@ -29,13 +29,22 @@ const welcomeBacks = [
     { id: 'wb-11', title: "você", description: "é simplesmente surpreendente" },
     { id: 'wb-11', title: "você", description: "é simplesmente incrível" },
     { id: 'wb-11', title: "é admirável", description: "sua determinação" },
+    { id: 'wb-12', title: "você voltou", description: "e isso já é um ato de coragem" },
+    { id: 'wb-13', title: "respire fundo", description: "o momento é agora" },
+    { id: 'wb-14', title: "o recomeço", description: "é o segredo de quem persiste" },
+    { id: 'wb-15', title: "não importa quantas vezes", description: "o que importa é voltar" },
+    { id: 'wb-16', title: "tô aqui por você", description: "e seguiremos juntos" },
+    { id: 'wb-17', title: "é sempre bom te ver", description: "vamos fazer isso juntos" },
+    { id: 'wb-18', title: "você brilha mais", description: "cada vez que insiste em tentar" },
+    { id: 'wb-19', title: "bem-vindo de volta", description: "o mundo pode esperar um pouco" }
 ];
 
 const welcomeSteps = [
-    { id: 'ws-1', title: "olá", description: "permita-me me apresentar" },
-    { id: 'ws-2', title: "muito prazer", description: "sou pomohero" },
-    { id: 'ws-3', title: "comigo", description: "você conhecerá novos limites" },
-    { id: 'ws-4', title: "te guiarei", description: "através do caminho do sucesso" },
+    { id: 'ws-1', title: "olá", description: "eu estava te esperando" },
+    { id: 'ws-2', title: "sou pomohero", description: "e tô aqui pra te apoiar" },
+    { id: 'ws-3', title: "estarei contigo", description: "mesmo nos seus piores dias" },
+    { id: 'ws-4', title: "venceremos", description: "sem pressa, com consistência e coragem" }
+
 ];
 
 // --- Funções Auxiliares ---
@@ -111,9 +120,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isNewUser, onExited 
 
     // --- Animação para o FUNDO do Modal (Controla Opacidade do Fundo) ---
     const backgroundVariants = {
-        initial: { opacity: 0.8 }, // Opacidade inicial do fundo
+        initial: { opacity: 1 }, // Opacidade inicial do fundo
         animate: (custom: { durationMs: number }) => ({
-             // Anima a opacidade do fundo durante a subida
+            // Anima a opacidade do fundo durante a subida
             opacity: [0.8, FINAL_BACKGROUND_OPACITY],
             transition: {
                 duration: custom.durationMs / 1000, // Mesma duração da subida
@@ -121,7 +130,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isNewUser, onExited 
                 delay: TRANSITION_DURATION_S * 0.5 // Começa a desvanecer junto com a subida
             }
         }),
-         // Garante que o fundo desapareça na saída também
+        // Garante que o fundo desapareça na saída também
         exit: { opacity: 0, transition: { duration: TRANSITION_DURATION_S * 0.8, ease: "easeIn" } }
     };
 
@@ -172,10 +181,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isNewUser, onExited 
                 <motion.div
                     key="welcome-modal-overlay"
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg p-4"
-                    initial={{ opacity: 0 }}
+                    initial={{ opacity: 0.4 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: TRANSITION_DURATION_S * 0.6, ease: 'linear' }}
+                    transition={{ duration: TRANSITION_DURATION_S * 1, ease: 'linear' }}
                 >
                     {/* Caixa Container do Modal */}
                     <motion.div
@@ -189,13 +198,13 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isNewUser, onExited 
                     >
                         {/* Elemento de Fundo */}
                         <motion.div
-                             key={modalData.id + "-background"}
-                             className="absolute inset-0 -z-10 rounded-2xl bg-white/30 backdrop-blur-md shadow-lg"
-                             variants={backgroundVariants}
-                             custom={{ durationMs: currentDurationMs }}
-                             initial="initial"
-                             animate="animate"
-                             exit="exit"
+                            key={modalData.id + "-background"}
+                            className="absolute inset-0 -z-10 rounded-2xl bg-white/50 backdrop-blur-md shadow-lg"
+                            variants={backgroundVariants}
+                            custom={{ durationMs: currentDurationMs }}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
                         />
 
                         {/* Conteúdo Interno */}
