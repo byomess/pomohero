@@ -1,6 +1,5 @@
-// src/components/History/HistoryItem.tsx
 import React, { useState, KeyboardEvent, useMemo, useRef, useEffect } from 'react';
-import { HistoryEntry, HistoryUpdateData } from '../../types'; // Tipos atualizados
+import { HistoryEntry, HistoryUpdateData } from '../../types';
 import { formatTime, formatTimestamp } from '../../utils/formatters';
 import { usePomodoro } from '../../contexts/PomodoroContext';
 import {
@@ -9,7 +8,7 @@ import {
 } from 'react-icons/fi';
 
 interface HistoryItemProps {
-    entry: HistoryEntry; // Agora inclui nextFocusPlans?: string[]
+    entry: HistoryEntry;
 }
 
 export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
@@ -17,23 +16,46 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedFocus, setEditedFocus] = useState('');
     const [editedFeedback, setEditedFeedback] = useState('');
-    // <<< Estado de edição para planos agora é string (para textarea) >>>
     const [editedNextPlans, setEditedNextPlans] = useState('');
+    const [editedStartTime, setEditedStartTime] = useState('');
+    const [editedEndTime, setEditedEndTime] = useState('');
     const focusTextAreaRef = useRef<HTMLTextAreaElement>(null);
 
-    // <<< Normalização para nextFocusPlans (similar a focusPoints) >>>
+    const timestampToDateTimeLocalString = (timestamp: number): string => {
+        try {
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) return '';
+            const timezoneOffset = date.getTimezoneOffset() * 60000;
+            const localISOTime = new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+            return localISOTime;
+        } catch (e) {
+            console.error("Error converting timestamp to datetime-local string:", e);
+            return '';
+        }
+    };
+
+    const dateTimeLocalStringToTimestamp = (dateTimeString: string): number | null => {
+        try {
+            if (!dateTimeString) return null;
+            const date = new Date(dateTimeString);
+            if (isNaN(date.getTime())) return null;
+            return date.getTime();
+        } catch (e) {
+            console.error("Error converting datetime-local string to timestamp:", e);
+            return null;
+        }
+    };
+
     const nextPlansArray: string[] = useMemo(() => {
         if (Array.isArray(entry.nextFocusPlans)) return entry.nextFocusPlans;
-        // Tratar string antiga (improvável, mas seguro)
         if (typeof entry.nextFocusPlans === 'string') {
              const plansString = entry.nextFocusPlans as string;
              if (plansString.trim() !== '') {
                  return plansString.split('\n').map(p => p.trim()).filter(p => p !== '');
             }
         }
-        return []; // Default para array vazio
+        return [];
     }, [entry.nextFocusPlans]);
-
 
     const pointsArray: string[] = useMemo(() => {
         if (Array.isArray(entry.focusPoints)) return entry.focusPoints;
@@ -55,17 +77,15 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
 
     const focusPointsToString = (points: string[]): string => (points || []).join('\n');
     const stringToFocusPoints = (text: string): string[] => text.split('\n').map(p => p.trim()).filter(p => p !== '');
-    // <<< Helper para converter planos array -> string para textarea >>>
     const nextPlansToString = (plans: string[]): string => (plans || []).join('\n');
-    // <<< Helper para converter string textarea -> planos array >>>
     const stringToNextPlans = (text: string): string[] => text.split('\n').map(p => p.trim()).filter(p => p !== '');
-
 
     const handleEditClick = () => {
         setEditedFocus(focusPointsToString(pointsArray));
         setEditedFeedback(entry.feedbackNotes || '');
-        // <<< Inicializa textarea de planos com string convertida >>>
         setEditedNextPlans(nextPlansToString(nextPlansArray));
+        setEditedStartTime(timestampToDateTimeLocalString(entry.startTime));
+        setEditedEndTime(timestampToDateTimeLocalString(entry.endTime));
         setIsEditing(true);
         playSound('click');
     };
@@ -78,22 +98,41 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
     const handleSaveClick = () => {
         const updates: HistoryUpdateData = {};
         const newFocusArray = stringToFocusPoints(editedFocus);
-        // <<< Converte textarea de planos de volta para array >>>
         const newNextPlansArray = stringToNextPlans(editedNextPlans);
+        const newStartTime = dateTimeLocalStringToTimestamp(editedStartTime);
+        const newEndTime = dateTimeLocalStringToTimestamp(editedEndTime);
+
+        let hasChanges = false;
 
         if (JSON.stringify(newFocusArray) !== JSON.stringify(pointsArray)) {
             updates.focusPoints = newFocusArray;
+            hasChanges = true;
         }
         if (editedFeedback.trim() !== (entry.feedbackNotes?.trim() || '')) {
             updates.feedbackNotes = editedFeedback.trim() === '' ? '' : editedFeedback.trim();
+            hasChanges = true;
         }
-        // <<< Compara e salva o array de planos >>>
         if (JSON.stringify(newNextPlansArray) !== JSON.stringify(nextPlansArray)) {
             updates.nextFocusPlans = newNextPlansArray.length > 0 ? newNextPlansArray : undefined;
+            hasChanges = true;
+        }
+        if (newStartTime !== null && newStartTime !== entry.startTime) {
+            updates.startTime = newStartTime;
+            hasChanges = true;
+        }
+        if (newEndTime !== null && newEndTime !== entry.endTime) {
+            // Basic validation: end time should not be before start time
+            const effectiveStartTime = newStartTime ?? entry.startTime;
+            if (newEndTime >= effectiveStartTime) {
+                updates.endTime = newEndTime;
+                hasChanges = true;
+            } else {
+                 console.warn("End time cannot be before start time. End time change ignored.");
+                 // Optionally provide user feedback here
+            }
         }
 
-
-        if (Object.keys(updates).length > 0) {
+        if (hasChanges) {
             updateHistoryEntry(entry.id, updates);
         } else {
             playSound('click');
@@ -105,8 +144,10 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
         deleteHistoryEntry(entry.id);
     };
 
-    const handleTextareaKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-        debouncedPlayTypingSound();
+    const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+        if (event.target instanceof HTMLTextAreaElement) {
+            debouncedPlayTypingSound();
+        }
         if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
             event.preventDefault();
             handleSaveClick();
@@ -121,17 +162,53 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
     const sectionLabelStyle = "flex items-center gap-1.5 font-medium text-sm opacity-90 mb-1";
     const sectionIconStyle = "w-3.5 h-3.5";
     const contentTextStyle = "text-sm opacity-90 leading-relaxed";
-    const editTextAreaStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm resize-none custom-scrollbar ${styles.inputBgColor} ${styles.textColor} focus:${styles.modalAccentColor}`;
+    const baseInputStyle = `w-full p-2 rounded-lg border-none focus:ring-2 focus:outline-none text-sm custom-scrollbar ${styles.inputBgColor} ${styles.textColor} focus:${styles.modalAccentColor}`;
+    const editTextAreaStyle = `${baseInputStyle} resize-none`;
+    const editInputStyle = `${baseInputStyle}`; // Style for date/time inputs
     const baseButtonStyle = `p-1.5 rounded-md transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-offset-black/30`;
     const actionIconStyle = "h-4 w-4";
 
     return (
         <li className={`p-4 rounded-2xl bg-black/30 border-l-4 ${styles.finalHistoryBorderColor} transition-all duration-200 ease-in-out group relative shadow-md hover:shadow-lg hover:bg-black/35`}>
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-between items-center mb-4 text-xs opacity-80 gap-x-3 gap-y-1">
-                 <div className={metadataItemStyle} title="Data"><FiCalendar className={metadataIconStyle} /><span>{new Date(entry.startTime).toLocaleDateString('pt-BR')}</span></div>
-                 <div className={metadataItemStyle} title="Horário (Início-Fim)"><FiClock className={metadataIconStyle} /><span>{formatTimestamp(entry.startTime)}-{formatTimestamp(entry.endTime)}</span></div>
-                 <div className={`${metadataItemStyle} font-medium opacity-90`} title="Duração Foco"><FiTarget className={metadataIconStyle} /><span>{formatTime(entry.duration)}</span></div>
-                 <div className="flex-grow hidden sm:block"></div>
+            <div className={`grid ${isEditing ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2 sm:flex sm:flex-wrap'} justify-between items-center mb-4 text-xs opacity-80 gap-x-3 gap-y-2`}>
+                 {isEditing ? (
+                     <>
+                        <div className="space-y-1">
+                            <label htmlFor={`edit-start-time-${entry.id}`} className={`${sectionLabelStyle} !text-xs !mb-0.5`}>
+                                <FiCalendar className={metadataIconStyle} /><span>Início</span>
+                            </label>
+                            <input
+                                type="datetime-local"
+                                id={`edit-start-time-${entry.id}`}
+                                value={editedStartTime}
+                                onChange={(e) => setEditedStartTime(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                className={editInputStyle}
+                            />
+                        </div>
+                         <div className="space-y-1">
+                             <label htmlFor={`edit-end-time-${entry.id}`} className={`${sectionLabelStyle} !text-xs !mb-0.5`}>
+                                 <FiClock className={metadataIconStyle} /><span>Fim</span>
+                             </label>
+                            <input
+                                type="datetime-local"
+                                id={`edit-end-time-${entry.id}`}
+                                value={editedEndTime}
+                                onChange={(e) => setEditedEndTime(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                className={editInputStyle}
+                                min={editedStartTime || undefined} // Basic validation: end time cannot be before start time
+                            />
+                        </div>
+                     </>
+                 ) : (
+                    <>
+                        <div className={metadataItemStyle} title="Data"><FiCalendar className={metadataIconStyle} /><span>{new Date(entry.startTime).toLocaleDateString('pt-BR')}</span></div>
+                        <div className={metadataItemStyle} title="Horário (Início-Fim)"><FiClock className={metadataIconStyle} /><span>{formatTimestamp(entry.startTime)}-{formatTimestamp(entry.endTime)}</span></div>
+                        <div className={`${metadataItemStyle} font-medium opacity-90`} title="Duração Foco"><FiTarget className={metadataIconStyle} /><span>{formatTime(entry.duration)}</span></div>
+                        <div className="flex-grow hidden sm:block"></div>
+                    </>
+                 )}
             </div>
 
             <div className={`space-y-4 ${isEditing ? 'mb-2' : ''}`}>
@@ -143,7 +220,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
                         {isEditing ? (
                             <textarea
                                 ref={focusTextAreaRef} id={`edit-focus-${entry.id}`} value={editedFocus}
-                                onChange={(e) => setEditedFocus(e.target.value)} onKeyDown={handleTextareaKeyDown}
+                                onChange={(e) => setEditedFocus(e.target.value)} onKeyDown={handleKeyDown}
                                 rows={3} className={editTextAreaStyle} placeholder="Um ponto de foco por linha..."
                             />
                         ) : (
@@ -162,7 +239,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
                          {isEditing ? (
                             <textarea
                                 id={`edit-feedback-${entry.id}`} value={editedFeedback}
-                                onChange={(e) => setEditedFeedback(e.target.value)} onKeyDown={handleTextareaKeyDown}
+                                onChange={(e) => setEditedFeedback(e.target.value)} onKeyDown={handleKeyDown}
                                 rows={3} className={editTextAreaStyle} placeholder="Como foi a sessão?"
                             />
                         ) : (
@@ -173,23 +250,19 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
                     </div>
                 )}
 
-                {/* <<< SEÇÃO Planos Próx. Foco ATUALIZADA >>> */}
-                {/* <<< Usa nextPlansArray para exibição e condição >>> */}
                 {(nextPlansArray.length > 0 || isEditing) && (
                     <div>
                          <label className={sectionLabelStyle} htmlFor={isEditing ? `edit-next-plans-${entry.id}` : undefined}>
                             <FiChevronsRight className={`${sectionIconStyle} text-orange-400/80`} /><span>Planos Próx. Foco</span>
                          </label>
                          {isEditing ? (
-                             // <<< Usa textarea para editar a lista como string >>>
                             <textarea
                                 id={`edit-next-plans-${entry.id}`} value={editedNextPlans}
-                                onChange={(e) => setEditedNextPlans(e.target.value)} onKeyDown={handleTextareaKeyDown}
+                                onChange={(e) => setEditedNextPlans(e.target.value)} onKeyDown={handleKeyDown}
                                 rows={2} className={editTextAreaStyle}
                                 placeholder="Planos para o próximo foco (um por linha)..."
                             />
                         ) : (
-                            // <<< Exibe como lista usando nextPlansArray >>>
                              <ul className={`list-none space-y-1 pl-1 ${contentTextStyle} opacity-75`}>
                                  {nextPlansArray.map((plan, index) => (
                                      <li key={index} className="break-words before:content-['▹_'] before:mr-1">{plan}</li>
@@ -198,9 +271,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({ entry }) => {
                         )}
                     </div>
                 )}
-                {/* <<< FIM SEÇÃO ATUALIZADA >>> */}
 
-                 {/* <<< Placeholder atualizado para verificar nextPlansArray >>> */}
                  {pointsArray.length === 0 && !entry.feedbackNotes?.trim() && nextPlansArray.length === 0 && !isEditing && (
                      <p className="text-sm italic opacity-50 pt-1">Nenhum detalhe registrado.</p>
                  )}

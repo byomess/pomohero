@@ -1,8 +1,7 @@
-// src/components/Backlog/BacklogItem.tsx
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { BacklogTask } from '../../types';
 import { usePomodoro } from '../../contexts/PomodoroContext';
-import { FiCheck, FiEdit2, FiTrash2, FiX } from 'react-icons/fi'; // Added FiSend
+import { FiCheck, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import { IoSend } from 'react-icons/io5';
 
 interface BacklogItemProps {
@@ -13,21 +12,18 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({ task }) => {
     const {
         updateBacklogTask,
         deleteBacklogTask,
-        moveTaskToFocus, // <<< Get the move function from context
+        moveTaskToFocus,
         playSound,
         styles,
         debouncedPlayTypingSound,
-        currentPhase,   // <<< Get Pomodoro state
-        isRunning,      // <<< Get Pomodoro state
-        isEffectRunning // <<< Get Pomodoro state
+        currentPhase,
     } = usePomodoro();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(task.text);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Determine if the "Move to Focus" action is allowed
-    const canMoveToFocus = currentPhase === 'Work' && !isRunning && !isEffectRunning;
+    const canMoveToFocus = currentPhase === 'Work';
 
     useEffect(() => {
         if (isEditing && inputRef.current) {
@@ -67,7 +63,6 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({ task }) => {
     const handleMoveToFocus = () => {
         if (canMoveToFocus) {
             moveTaskToFocus(task.id);
-            // Sound is played by moveTaskToFocus itself
         }
     };
 
@@ -81,14 +76,12 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({ task }) => {
     };
 
     const textStyle = "flex-grow break-words mr-2 text-sm";
-    const buttonStyle = "p-1 rounded hover:opacity-100 transition-opacity flex-shrink-0 opacity-80"; // Added default opacity
+    const buttonStyle = "p-1 rounded hover:opacity-100 transition-opacity flex-shrink-0 opacity-80";
     const iconStyle = "h-3.5 w-3.5";
-    const disabledButtonStyle = "disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent";
 
     return (
         <li className={`flex items-center justify-between p-1.5 rounded bg-black/10 min-h-[36px] group ${styles.textColor}`}>
             {isEditing ? (
-                // --- Editing State ---
                 <>
                     <input
                         ref={inputRef}
@@ -106,41 +99,34 @@ export const BacklogItem: React.FC<BacklogItemProps> = ({ task }) => {
                     </div>
                 </>
             ) : (
-                // --- Display State ---
                 <>
-                    <span className={`${textStyle} ${canMoveToFocus ? 'cursor-pointer hover:opacity-75' : ''}`} title={canMoveToFocus ? "Clique para editar ou use os botões" : task.text} onClick={canMoveToFocus ? handleEditStart : undefined}>
+                    <span className={`${textStyle} cursor-pointer hover:opacity-75`} title="Clique para editar ou use os botões" onClick={handleEditStart}>
                         {task.text}
                     </span>
-                    {/* Action buttons appear on hover/focus-within */}
                     <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                        {/* Move to Focus Button */}
                         <button
                             onClick={handleMoveToFocus}
-                            title={canMoveToFocus ? "Mover para Foco" : "Apenas durante fase de Foco (Pausado)"}
+                            title={canMoveToFocus ? "Mover para Foco" : "Apenas durante fase de Foco"}
                             aria-label="Mover tarefa para pontos de foco"
-                            className={`${buttonStyle} text-purple-300 hover:bg-purple-500/20 ${disabledButtonStyle}`} // Purple color for move action
-                            disabled={!canMoveToFocus} // Disable based on context state
+                            className={`${buttonStyle} text-purple-300 hover:bg-purple-500/20 ${!canMoveToFocus ? 'opacity-30 cursor-not-allowed hover:bg-transparent' : ''}`}
+                            disabled={!canMoveToFocus}
                         >
                             <IoSend className={iconStyle} />
                         </button>
-                        {/* Edit Button */}
                          <button
                              onClick={handleEditStart}
-                             title={canMoveToFocus ? "Editar" : "Edição desabilitada durante timer"} // Reuse canMoveToFocus as it represents editability too
+                             title="Editar"
                              aria-label="Editar Tarefa"
-                             className={`${buttonStyle} text-blue-300 hover:bg-blue-500/20 ${disabledButtonStyle}`}
-                             disabled={!canMoveToFocus}
+                             className={`${buttonStyle} text-blue-300 hover:bg-blue-500/20`}
                          >
                             <FiEdit2 className={iconStyle} />
                         </button>
-                        {/* Delete Button */}
                         <button
                             onClick={handleDelete}
                             title="Excluir"
                             aria-label="Excluir Tarefa"
-                            className={`${buttonStyle} text-red-400 hover:bg-red-500/20 ${disabledButtonStyle}`}
-                             disabled={!canMoveToFocus} // Also disable delete while running for consistency? Optional.
-                        >
+                            className={`${buttonStyle} text-red-400 hover:bg-red-500/20`}
+                         >
                              <FiTrash2 className={iconStyle} />
                          </button>
                     </div>

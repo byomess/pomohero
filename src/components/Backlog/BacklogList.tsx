@@ -1,4 +1,3 @@
-// src/components/Backlog/BacklogList.tsx
 import React, { useState, KeyboardEvent } from 'react';
 import { usePomodoro } from '../../contexts/PomodoroContext';
 import { BacklogItem } from './BacklogItem';
@@ -23,7 +22,6 @@ export const BacklogList: React.FC = () => {
     };
 
     return (
-        // Container principal: flex flex-col e h-full para preencher espaço do pai
         <div className={`w-full h-full p-5 md:p-6 rounded-3xl shadow-xl backdrop-blur-sm bg-black/25 ${styles.textColor} flex flex-col`}>
 
             <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3 flex-shrink-0">
@@ -49,7 +47,6 @@ export const BacklogList: React.FC = () => {
                 > <FiPlus className="h-5 w-5" /> </button>
             </div>
 
-            {/* Container da Lista: flex-1 para ocupar espaço restante, min-h-0 para permitir encolher, overflow-y-auto para scroll */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-2 pb-1 [mask-image:linear-gradient(to_bottom,black_95%,transparent_100%)]">
                 {backlogTasks.length > 0 ? (
                     <ul className="space-y-2">
