@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState, useEffect, useRef } from 'react'; // Import useState, useEffect, useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { PomodoroProvider, usePomodoro } from './contexts/PomodoroContext';
 import { TimerDisplay } from './components/Timer/TimerDisplay';
 import { ProgressCircle } from './components/Timer/ProgressCircle';
@@ -14,68 +14,78 @@ import { SettingsModal } from './components/Settings/SettingsModal';
 import { TimerAdjustControls } from './components/Timer/TimerAdjustControls';
 import { BacklogList } from './components/Backlog/BacklogList';
 import { MusicPlayer } from './components/MusicPlayer/MusicPlayer';
-import { AnimatePresence } from 'framer-motion'; // Import AnimatePresence
-import { CongratsModal } from './components/Modals/CongratsModal'; // Import o novo Modal
+import { AnimatePresence } from 'framer-motion';
+import { CongratsModal } from './components/Modals/CongratsModal';
 import { BackToFocusModal } from './components/Modals/BackToFocusModal';
+import { SOSFocusModal } from './components/Modals/SOSFocusModal'; // Importar SOSFocusModal
 
 const PomodoroLayout: React.FC = () => {
     const { currentPhase, styles, isRunning } = usePomodoro();
     const isBreakPhase = currentPhase === 'Short Break' || currentPhase === 'Long Break';
     const isFocusPhase = currentPhase === 'Work';
 
-    // --- Lógica do Modal de Congratulação ---
+    // --- Estado dos Modais ---
     const [showCongratsModal, setShowCongratsModal] = useState(false);
     const [showBackToFocusModal, setShowBackToFocusModal] = useState(false);
-    const [userInteracted, setUserInteracted] = useState(false); // Estado para rastrear interação do usuário
+    const [showSOSFocusModal, setShowSOSFocusModal] = useState(false); // Estado para SOS Focus Modal
+    const [userInteracted, setUserInteracted] = useState(false); // Estado para rastrear interação inicial
+
     const previousIsRunning = useRef(isRunning); // Guarda o estado anterior de isRunning
-    const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref para o timeout
+    const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref para o timeout dos modais automáticos
 
     useEffect(() => {
-        const justEnteredBreakPhase =
-            previousIsRunning.current &&
-            isBreakPhase;
+        const justEnteredBreakPhase = previousIsRunning.current && isBreakPhase;
+        const justEnteredFocusPhase = previousIsRunning.current && isFocusPhase;
 
-        const justEnteredFocusPhase =
-            previousIsRunning.current &&
-            isFocusPhase;
+        // Limpa timeout anterior ao reavaliar
+        if (modalTimeoutRef.current) {
+            clearTimeout(modalTimeoutRef.current);
+            modalTimeoutRef.current = null;
+        }
 
         if (justEnteredBreakPhase) {
-            setTimeout(() => {
+            const congratsTimer = setTimeout(() => {
                 setShowCongratsModal(true);
-
-                if (modalTimeoutRef.current) {
-                    clearTimeout(modalTimeoutRef.current);
-                }
-
+                // Define um novo timeout para fechar o modal de congrats
                 modalTimeoutRef.current = setTimeout(() => {
                     setShowCongratsModal(false);
                     modalTimeoutRef.current = null;
                 }, 5000);
-            }, 500);
+            }, 500); // Delay para exibir o modal após a transição de fase
+             return () => clearTimeout(congratsTimer); // Limpa o timer de exibição se o componente desmontar ou o efeito rodar novamente
         } else if (justEnteredFocusPhase) {
-            setTimeout(() => {
+            const backToFocusTimer = setTimeout(() => {
                 setShowBackToFocusModal(true);
-
-                if (modalTimeoutRef.current) {
-                    clearTimeout(modalTimeoutRef.current);
-                }
-
+                 // Define um novo timeout para fechar o modal de back-to-focus
                 modalTimeoutRef.current = setTimeout(() => {
                     setShowBackToFocusModal(false);
                     modalTimeoutRef.current = null;
                 }, 5000);
-            }, 500);
+            }, 500); // Delay para exibir o modal após a transição de fase
+             return () => clearTimeout(backToFocusTimer); // Limpa o timer de exibição
         }
 
         previousIsRunning.current = isRunning;
 
+        // Cleanup geral do timeout de fechamento automático
         return () => {
             if (modalTimeoutRef.current) {
                 clearTimeout(modalTimeoutRef.current);
             }
         };
-    }, [isRunning, currentPhase, isBreakPhase, isFocusPhase]);
+    }, [isRunning, currentPhase, isBreakPhase, isFocusPhase]); // Dependências do efeito
 
+    // Função para abrir o SOS Focus Modal (passada para PhaseIndicator)
+    const handleShowSOSModal = () => {
+        setShowSOSFocusModal(true);
+    };
+
+    // Função para fechar o SOS Focus Modal (passada para SOSFocusModal)
+    const handleCloseSOSModal = () => {
+        setShowSOSFocusModal(false);
+    };
+
+    // Renderização condicional baseada na interação inicial do usuário
     return userInteracted ? (
         <div className={`
             h-screen w-full flex flex-col items-center justify-start
@@ -99,7 +109,9 @@ const PomodoroLayout: React.FC = () => {
                     ${styles.textColor} order-first lg:order-none flex flex-col
                     border-2 ${styles.timerHighlightBorderColor} transition-colors duration-300 ease-in-out
                 `}>
-                    <PhaseIndicator />
+                    {/* Passa a função para abrir o modal SOS */}
+                    <PhaseIndicator onShowSOSModal={handleShowSOSModal} />
+
                     <div className="relative mb-4">
                         <div className="w-64 h-64 md:w-72 md:h-72 mx-auto rounded-full flex items-center justify-center shadow-inner relative">
                             <ProgressCircle />
@@ -119,6 +131,9 @@ const PomodoroLayout: React.FC = () => {
                                 </div>
                             </>
                         )}
+                        {/* Placeholder para garantir espaço mínimo se não houver inputs */}
+                        {currentPhase !== 'Work' && !isBreakPhase && <div className="flex-1 min-h-[50px]"></div>}
+                         {currentPhase === 'Work' && <div className="flex-1 min-h-[50px]"></div>}
                     </div>
                     <TimerControls />
                 </div>
@@ -128,28 +143,50 @@ const PomodoroLayout: React.FC = () => {
                     <div className="h-full"> <HistoryList /> </div>
                 </div>
             </div>
+
+            {/* Modal de Configurações (geralmente controlado internamente ou por contexto) */}
             <SettingsModal />
 
-            {/* Renderização Condicional do Modal com Animação */}
-            <AnimatePresence>
-                {showCongratsModal && <CongratsModal />}
-                {showBackToFocusModal && <BackToFocusModal />}
+            {/* Container para Modais animados */}
+            <AnimatePresence mode="wait">
+                {showCongratsModal && (
+                    <CongratsModal
+                        key="congrats-modal"
+                    />
+                )}
+                {showBackToFocusModal && (
+                    <BackToFocusModal
+                        key="backtofocus-modal"
+                    />
+                )}
+                {showSOSFocusModal && (
+                    <SOSFocusModal
+                        key="sosfocus-modal"
+                        onExited={handleCloseSOSModal} // Fecha quando a animação de saída termina
+                    />
+                )}
             </AnimatePresence>
         </div>
     ) : (
-        <div className="h-screen w-full flex items-center justify-center bg-slate-900">
+        // Tela inicial antes da interação do usuário
+        <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-slate-900">
             <button
-                className="text-white border-2 rounded-xl text-lg px-4 py-2 hover:bg-white/30 transition duration-300 ease-in-out cursor-pointer"
+                className="text-white border-2 border-white/30 rounded-xl text-lg px-6 py-3 hover:bg-white/10 transition duration-300 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-slate-900 shadow-lg"
                 onClick={() => setUserInteracted(true)}
             >
-                começar
+                Iniciar PomoHero
             </button>
         </div>
-    )
+    );
 };
 
+// Componente App principal que fornece o contexto
 const App: React.FC = () => {
-    return (<PomodoroProvider> <PomodoroLayout /> </PomodoroProvider>);
+    return (
+        <PomodoroProvider>
+            <PomodoroLayout />
+        </PomodoroProvider>
+    );
 };
 
 export default App;
