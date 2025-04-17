@@ -15,6 +15,10 @@ const FINAL_ICON_COLOR = "#ffffff";
 
 const backToFocusData = [
   {
+    title: "você já fez",
+    phrase: "isso antes, e conseguiu",
+  },
+  {
     title: "lembre-se",
     phrase: "a dor da disciplina é menor que a dor do arrependimento",
   },

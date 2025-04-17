@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BsAward } from 'react-icons/bs';
+import { title } from 'process';
 
 // --- Constantes ---
 const CONGRATS_DURATION_MS = 4800;
@@ -17,10 +18,29 @@ const FINAL_ICON_COLOR = "#ffffff";
 
 // --- Frases pós-foco ---
 const afterFocusData = [
-  { title: "boa!", phrase: "você acabou de fortalecer seu foco" },
+  { title: "é isso", phrase: "você venceu mais uma vez" },
   { title: "parabéns", phrase: "seu cérebro agradece esse esforço" },
-  { title: "mais uma pra conta", phrase: "continue nesse ritmo gentil" },
+  { title: "mais uma pra conta", phrase: "continue nesse ritmo, está perfeito" },
   { title: "foco concluído", phrase: "agora respire e aproveite o intervalo" },
+  { title: "isso é vitória", phrase: "e você merece um momento só seu" },
+  { title: "baita conquista", phrase: "e o mérito é todo seu" },
+  { title: "surpreendente", phrase: "você tá indo longe com isso" },
+  { title: "inacreditável", phrase: "o tamanho da sua vontade de vencer" },
+  { title: "esforço notável", phrase: "e você tá colhendo os frutos disso" },
+  { title: "respire fundo", phrase: "e sinta o orgulho de ter feito isso" },
+  { title: "você fez", phrase: "aquilo acontecer" },
+  { "title": "ritmo de campeão", "phrase": "cada foco seu é um passo a mais no pódio" },
+  { "title": "respeito", "phrase": "você merece todo o crédito por esse foco" },
+  { "title": "você é constante", "phrase": "e constância é o que muda tudo" },
+  { "title": "orgulho puro", "phrase": "é lindo ver esse comprometimento" },
+  { "title": "essa foi de mestre", "phrase": "você dominou o tempo como um herói" },
+  { "title": "mais forte que a preguiça", "phrase": "isso sim é superpoder" },
+  { "title": "você não falhou", "phrase": "você escolheu continuar" },
+  { "title": "sua mente agradece", "phrase": "e seu futuro também" },
+  { "title": "você mandou muito", "phrase": "agora vai lá e aproveita a pausa, você merece" },
+  { "title": "olha só você", "phrase": "transformando foco em conquistas reais" },
+  { "title": "imparável", "phrase": "só quem tá nesse ritmo entende" },
+  { title: "mais forte", phrase: "mais focado, menos culpa" },
   { title: "isso é progresso", phrase: "mesmo que pareça pequeno" },
   { title: "isso foi um passo real", phrase: "e você deu ele com coragem" },
   { title: "ótimo trabalho", phrase: "é assim que se constrói constância" },
@@ -36,7 +56,8 @@ const afterFocusData = [
   { title: "você não desistiu", phrase: "e isso diz muito sobre você" },
   { title: "o foco é seu aliado", phrase: "e você tá aprendendo a trabalhar com ele" },
   { title: "foi uma boa escolha", phrase: "dar esse tempo ao que importa" },
-  { title: "você pode confiar nisso", phrase: "sua capacidade de focar está viva" }
+  { title: "pode confiar nisso", phrase: "sua capacidade de focar está viva" },
+  { title: "você me emociona", phrase: "com sua persistência e coragem" },
 ];
 
 const getRandomElement = <T,>(arr: T[]): T => {

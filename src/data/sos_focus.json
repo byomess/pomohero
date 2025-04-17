@@ -1,6 +1,48 @@
 [
     [
         {
+            "primary": "tá tudo bem",
+            "secondary": "você já está está tentando"
+        },
+        {
+            "primary": "não precisa",
+            "secondary": "fazer tudo de uma vez"
+        },
+        {
+            "primary": "só um pouquinho",
+            "secondary": "do seu esforço, agora, é tudo que você precisa fazer"
+        }
+    ],
+    [
+        {
+            "primary": "já te disseram",
+            "secondary": "um bom dia hoje? bom dia, amigo"
+        },
+        {
+            "primary": "mas já te disseram",
+            "secondary": "que você é incrível? você é incrível"
+        },
+        {
+            "primary": "hoje",
+            "secondary": "é um dia novo, e você já tá fazendo ele valer a pena"
+        }
+    ],
+    [
+        {
+            "primary": "eu sei",
+            "secondary": "que você se sente esgotado, às vezes"
+        },
+        {
+            "primary": "mas progresso",
+            "secondary": "é progresso, mesmo que pequeno"
+        },
+        {
+            "primary": "dá só mais um passo",
+            "secondary": "e você vai ver que tudo valeu a pena"
+        }
+    ],
+    [
+        {
             "primary": "não precisa",
             "secondary": "estar pronto. você só precisa começar"
         },
