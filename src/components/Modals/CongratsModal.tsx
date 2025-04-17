@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BsAward } from 'react-icons/bs';
-import { title } from 'process';
 
 // --- Constantes ---
 const CONGRATS_DURATION_MS = 4800;

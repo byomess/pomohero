@@ -79,3 +79,4 @@ export const INTRO_INITIAL_VOLUME = 0.2; // 0.0 to 1.0
 export const INTRO_NORMAL_VOLUME = 0.5; // 0.0 to 1.0
 
 export const INTRO_AUDIO_URL = '/music/✦RX-007: Arise (Shogonodo) [DIGI∕USB] - Ploom - Laboratory.mp3';
+export const SOS_FOCUS_MUSIC_VOLUME = 0.2; // Volume for SOS Focus music

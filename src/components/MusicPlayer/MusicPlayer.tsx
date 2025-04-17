@@ -5,7 +5,7 @@ import { usePomodoro } from '../../contexts/PomodoroContext';
 import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle } from 'react-icons/fi';
 import { SeekBar } from './SeekBar';
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
-import { FOCUS_TARGET_VOLUME, BREAK_TARGET_VOLUME, DEFAULT_MUSIC_VOLUME, INTRO_TRACK_ID } from '../../utils/constants';
+import { FOCUS_TARGET_VOLUME, BREAK_TARGET_VOLUME, INTRO_TRACK_ID } from '../../utils/constants';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { WelcomeModal } from '../Modals/WelcomeModal';
 
@@ -43,13 +43,12 @@ const getRandomIndexExcept = (
 };
 
 export const MusicPlayer: React.FC = () => {
-    const { styles, playSound, targetMusicVolume, isRunning: isPomodoroRunning, currentPhase, preloadedIntroUrl } = usePomodoro();
+    const { styles, playSound, targetMusicVolume, isRunning: isPomodoroRunning, currentPhase, preloadedIntroUrl, musicVolume, setMusicVolume } = usePomodoro();
     const [selectedCategory, setSelectedCategory] = useState<MusicCategory>('music');
     const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(DEFAULT_MUSIC_VOLUME);
     const [isMuted, setIsMuted] = useState(false);
     const [lastVolume, setLastVolume] = useState(0.7);
     const [isVolumeSliderVisible, setIsVolumeSliderVisible] = useState(false);
@@ -183,7 +182,7 @@ export const MusicPlayer: React.FC = () => {
 
     const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = parseFloat(event.target.value);
-        setVolume(newVolume);
+        setMusicVolume(newVolume);
         setIsMuted(newVolume === 0);
         if (newVolume > 0) setLastVolume(newVolume);
     };
@@ -197,13 +196,13 @@ export const MusicPlayer: React.FC = () => {
     const toggleMute = (event: React.MouseEvent) => {
         event.stopPropagation();
         playSound('buttonPress');
-        const currentlyMuted = isMuted || volume === 0;
+        const currentlyMuted = isMuted || musicVolume === 0;
         if (currentlyMuted) {
             const targetVolume = lastVolume > 0 ? lastVolume : 0.5;
-            setVolume(targetVolume);
+            setMusicVolume(targetVolume);
             setIsMuted(false);
         } else {
-            setLastVolume(volume);
+            setLastVolume(musicVolume);
             setIsMuted(true);
         }
     };
@@ -261,14 +260,14 @@ export const MusicPlayer: React.FC = () => {
 
     useEffect(() => {
         if (audioRef.current) {
-            audioRef.current.volume = isMuted ? 0 : volume;
+            audioRef.current.volume = isMuted ? 0 : musicVolume;
         }
-    }, [volume, isMuted]);
+    }, [musicVolume, isMuted]);
 
     const adjustVolumeIfNeeded = useCallback(() => {
         if (!audioRef.current || !isPlaying || isMuted) return;
 
-        const currentInternalVolume = volume;
+        const currentInternalVolume = musicVolume;
 
         // Caso use targetMusicVolume pra decidir:
         if (
@@ -276,18 +275,18 @@ export const MusicPlayer: React.FC = () => {
             currentInternalVolume > FOCUS_TARGET_VOLUME
         ) {
             setLastVolume(currentInternalVolume);
-            setVolume(FOCUS_TARGET_VOLUME);
+            setMusicVolume(FOCUS_TARGET_VOLUME);
         } else if (
             targetMusicVolume === BREAK_TARGET_VOLUME &&
             currentInternalVolume < BREAK_TARGET_VOLUME
         ) {
             setLastVolume(currentInternalVolume);
-            setVolume(BREAK_TARGET_VOLUME);
+            setMusicVolume(BREAK_TARGET_VOLUME);
         }
     }, [
         audioRef,
         isPlaying,
-        volume,
+        musicVolume,
         targetMusicVolume,
         isMuted,
     ]);
@@ -295,14 +294,14 @@ export const MusicPlayer: React.FC = () => {
     useEffect(() => {
         const hasJustChangedRunningState = (isPomodoroRunning !== wasPomodoroRunningRef.current);
 
-        // Se houve transição (começou a rodar ou parou de rodar), tenta ajustar volume
+        // Se houve transição (começou a rodar ou parou de rodar), tenta ajustar musicVolume
         if (hasJustChangedRunningState) {
             adjustVolumeIfNeeded();
         }
 
         // Atualiza a referência de "estado anterior"
         wasPomodoroRunningRef.current = isPomodoroRunning;
-    }, [isPomodoroRunning, currentPhase, targetMusicVolume, isMuted, isPlaying, volume, adjustVolumeIfNeeded]);
+    }, [isPomodoroRunning, currentPhase, targetMusicVolume, isMuted, isPlaying, musicVolume, adjustVolumeIfNeeded]);
 
 
     useEffect(() => {
@@ -567,7 +566,7 @@ export const MusicPlayer: React.FC = () => {
                             aria-label={
                                 isMuted
                                     ? 'Ativar som'
-                                    : 'Desativar som ou ajustar volume'
+                                    : 'Desativar som ou ajustar musicVolume'
                             }
                         >
                             {isMuted ? (
@@ -586,10 +585,10 @@ export const MusicPlayer: React.FC = () => {
                                     min="0"
                                     max="1"
                                     step="0.01"
-                                    value={isMuted ? 0 : volume}
+                                    value={isMuted ? 0 : musicVolume}
                                     onChange={handleVolumeChange}
                                     className={`w-20 h-1.5 appearance-none cursor-pointer bg-white/20 rounded-full accent-${accentColor}`}
-                                    aria-label="Controle de volume"
+                                    aria-label="Controle de musicVolume"
                                 />
                             </div>
                         )}

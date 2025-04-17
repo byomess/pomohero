@@ -60,6 +60,7 @@ import {
     CURRENT_FEEDBACK_NOTES_STORAGE_KEY,
     CURRENT_FOCUS_POINTS_STORAGE_KEY,
     NEXT_FOCUS_PLANS_STORAGE_KEY,
+    DEFAULT_MUSIC_VOLUME,
 } from '../utils/constants';
 import { formatTime } from '../utils/formatters';
 
@@ -86,6 +87,7 @@ interface PomodoroContextType {
     hasExtendedCurrentFocus: boolean;
     isHyperfocusActive: boolean;
     preloadedIntroUrl: string | null;
+    musicVolume: number;
 
     setSettings: React.Dispatch<React.SetStateAction<PomodoroSettings>>;
     handleSettingChange: (key: keyof PomodoroSettings, value: number | boolean) => void;
@@ -119,6 +121,7 @@ interface PomodoroContextType {
     debouncedPlayTypingSound: () => void;
     extendFocusSession: (secondsToAdd: number) => void;
     setPreloadedIntroUrl: React.Dispatch<React.SetStateAction<string | null>>;
+    setMusicVolume: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined);
@@ -156,6 +159,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children, pr
     const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
     const [activeBgColorOverride, setActiveBgColorOverride] = useState<string | null>(null);
     const [targetMusicVolume, setTargetMusicVolume] = useState<number>(FOCUS_TARGET_VOLUME);
+    const [musicVolume, setMusicVolume] = useState(DEFAULT_MUSIC_VOLUME);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const focusStartEffectTimeouts = useRef<NodeJS.Timeout[]>([]);
@@ -570,7 +574,8 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children, pr
         setNextFocusPlans, addNextFocusPlan, removeNextFocusPlan, updateNextFocusPlan, startPauseTimer, resetTimer, skipPhase,
         clearHistory, openSettingsModal, closeSettingsModal, adjustTimeLeft, updateBreakInfoInHistory, updateHistoryEntry,
         deleteHistoryEntry, addManualHistoryEntry, addBacklogTask, updateBacklogTask, deleteBacklogTask, clearBacklog,
-        moveTaskToFocus, playSound, playAlarmLoop, stopAlarmLoop, debouncedPlayTypingSound, extendFocusSession, preloadedIntroUrl, setPreloadedIntroUrl,
+        moveTaskToFocus, playSound, playAlarmLoop, stopAlarmLoop, debouncedPlayTypingSound, extendFocusSession, preloadedIntroUrl,
+        setPreloadedIntroUrl, musicVolume, setMusicVolume
     };
 
     return (
