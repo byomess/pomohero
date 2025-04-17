@@ -1,113 +1,87 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap');
 
+/* Mantenha o @import "tailwindcss" no topo */
 @import "tailwindcss";
 
-@theme {
-  --font-cormorant: 'Cormorant Garamond', serif;
-  --font-display: 'Cormorant Garamond', serif;
+@layer base {
+  body {
+    font-family: 'Cormorant Garamond', serif;
+    font-optical-sizing: auto;
+    background-color: #1e1e2f;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
 }
+
+@layer components {
+  /* ... estilos .custom-scrollbar ... */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.1);
+  }
+  .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 10px; margin-block: 2px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.4); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.55); }
+  .custom-scrollbar::-webkit-scrollbar-button { display: none; }
+  .custom-scrollbar::-webkit-scrollbar-corner { background: transparent; }
+}
+
 
 @layer utilities {
-  .text-shadow-sm {
-    text-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  /* ... utilidades text-shadow ... */
+  .text-shadow-sm { text-shadow: 0 1px 2px rgb(0 0 0 / 0.4); }
+  .text-shadow { text-shadow: 0 1px 3px rgb(0 0 0 / 0.5), 0 1px 2px rgb(0 0 0 / 0.4); }
+  .text-shadow-md { text-shadow: 0 4px 6px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4); }
+  .text-shadow-lg { text-shadow: 0 10px 15px rgb(0 0 0 / 0.5), 0 4px 6px rgb(0 0 0 / 0.4); }
+  .text-shadow-none { text-shadow: none; }
+
+  /* ... outras animações ... */
+  .animate-pulse-slow { animation: pulseSlow 20s ease-in-out infinite; }
+  .animate-fade-in-down { animation: fadeInDown 0.3s ease-out forwards; }
+  .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
+  .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+  /* ---- ANIMAÇÃO SOFT PULSE (Padrão) ---- */
+  .animate-soft-pulse {
+    /* Duração mais longa (10s), variação suave (0.85) */
+    animation: soft-pulse 10s ease-in-out infinite;
   }
-   .text-shadow {
-    text-shadow: 0 1px 3px rgb(0 0 0 / 0.5), 0 1px 2px rgb(0 0 0 / 0.4);
+  /* ---------------------------------- */
+
+  /* ---- NOVA ANIMAÇÃO INTENSE PULSE (Work Ativo) ---- */
+  .animate-intense-pulse {
+     /* Duração mais curta (ex: 3s), variação maior (ex: 0.6) */
+    animation: intense-pulse 3s ease-in-out infinite;
   }
-   .text-shadow-md {
-    text-shadow: 0 4px 6px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
-  }
-   .text-shadow-lg {
-     text-shadow: 0 10px 15px rgb(0 0 0 / 0.5), 0 4px 6px rgb(0 0 0 / 0.4);
-  }
-   .text-shadow-none {
-    text-shadow: none;
-  }
-
-  .animate-pulse-slow {
-    animation: pulseSlow 4s ease-in-out infinite;
-  }
+  /* ---------------------------------- */
 }
 
-body {
-  font-family: "Cormorant Garamond", serif;
-  font-optical-sizing: auto;
-  background-color: #1e1e2f; /* Dark background */
-  color: #ffffff; /* Light text color */
-  margin: 0;
-  padding: 0;
-  line-height: 1.6;
-}
+/* Definições de Keyframes */
 
-/* Apply to elements you want to style */
-.custom-scrollbar {
-  /* Firefox */
-  scrollbar-width: thin; /* Or 'auto' or 'none' */
-  scrollbar-color: rgba(255, 255, 255, 0.4) rgba(0, 0, 0, 0.1); /* thumb track */
-}
-
-/* Webkit Browsers (Chrome, Safari, Edge, Opera) */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;  /* Width of vertical scrollbar */
-  height: 8px; /* Height of horizontal scrollbar */
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1); /* Slightly darker transparent track */
-  border-radius: 10px; /* Rounded track */
-  margin-block: 2px; /* Optional: add a little space top/bottom */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.4); /* Semi-transparent white thumb */
-  border-radius: 10px; /* Rounded thumb */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.55); /* Slightly more opaque on hover */
-}
-
-/* Optional: Hide scrollbar buttons (arrows) for a cleaner look */
-.custom-scrollbar::-webkit-scrollbar-button {
-  display: none;
-}
-
-/* Optional: Style the corner where vertical and horizontal scrollbars meet */
-.custom-scrollbar::-webkit-scrollbar-corner {
-  background: transparent; /* Make the corner invisible */
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-down {
-  animation: fadeInDown 0.3s ease-out forwards;
-}
-
+/* Fades */
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.animate-fade-in-down { animation: fadeInDown 0.3s ease-out forwards; }
-.animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
-.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-
+/* Pulse Slow (existente) */
 @keyframes pulseSlow {
-  0%, 100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.03);
-    filter: brightness(1.3);
-  }
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.03); filter: brightness(1.3); }
 }
+
+/* ---- SOFT PULSE KEYFRAMES (Padrão) ---- */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; } /* Suave */
+}
+/* ---------------------------------- */
+
+/* ---- NOVOS KEYFRAMES INTENSE PULSE (Work Ativo) ---- */
+@keyframes intense-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; } /* Mais intenso - ajuste 0.6 conforme necessário */
+}
+/* ---------------------------------- */
