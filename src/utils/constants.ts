@@ -77,3 +77,5 @@ export const INTRO_START_TIME_RETURNING_USER = 136; // seconds
 export const WELCOME_MODAL_DELAY_RETURNING_USER = 4800; // milliseconds
 export const INTRO_INITIAL_VOLUME = 0.2; // 0.0 to 1.0
 export const INTRO_NORMAL_VOLUME = 0.5; // 0.0 to 1.0
+
+export const INTRO_AUDIO_URL = '/music/✦RX-007: Arise (Shogonodo) [DIGI∕USB] - Ploom - Laboratory.mp3';

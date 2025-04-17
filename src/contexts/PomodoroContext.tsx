@@ -85,6 +85,7 @@ interface PomodoroContextType {
     showExtensionOptions: boolean;
     hasExtendedCurrentFocus: boolean;
     isHyperfocusActive: boolean;
+    preloadedIntroUrl: string | null;
 
     setSettings: React.Dispatch<React.SetStateAction<PomodoroSettings>>;
     handleSettingChange: (key: keyof PomodoroSettings, value: number | boolean) => void;
@@ -117,6 +118,7 @@ interface PomodoroContextType {
     stopAlarmLoop: () => void;
     debouncedPlayTypingSound: () => void;
     extendFocusSession: (secondsToAdd: number) => void;
+    setPreloadedIntroUrl: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined);
@@ -129,9 +131,10 @@ const defaultSettings: PomodoroSettings = {
 
 interface PomodoroProviderProps {
     children: ReactNode;
+    preloadedIntroUrl?: string | null | undefined;
 }
 
-export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) => {
+export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children, preloadedIntroUrl: initialPreloadedIntroUrl }) => {
     const [settings, setSettings] = useLocalStorage<PomodoroSettings>(SETTINGS_STORAGE_KEY, defaultSettings);
     const { workDuration, shortBreakDuration, longBreakDuration, cyclesBeforeLongBreak, soundEnabled } = settings;
 
@@ -159,6 +162,8 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
     const timerDeadlineRef = useRef<number | null>(null);
     const nextPhaseTriggeredRef = useRef<boolean>(false);
     const almostEndingSoundPlayedRef = useRef<boolean>(false);
+
+    const [preloadedIntroUrl, setPreloadedIntroUrl] = useState<string | null>(initialPreloadedIntroUrl ?? null);
 
     const { playSound, debouncedPlayTypingSound, playAlarmLoop, stopAlarmLoop } = useSounds(soundEnabled);
 
@@ -565,7 +570,7 @@ export const PomodoroProvider: React.FC<PomodoroProviderProps> = ({ children }) 
         setNextFocusPlans, addNextFocusPlan, removeNextFocusPlan, updateNextFocusPlan, startPauseTimer, resetTimer, skipPhase,
         clearHistory, openSettingsModal, closeSettingsModal, adjustTimeLeft, updateBreakInfoInHistory, updateHistoryEntry,
         deleteHistoryEntry, addManualHistoryEntry, addBacklogTask, updateBacklogTask, deleteBacklogTask, clearBacklog,
-        moveTaskToFocus, playSound, playAlarmLoop, stopAlarmLoop, debouncedPlayTypingSound, extendFocusSession,
+        moveTaskToFocus, playSound, playAlarmLoop, stopAlarmLoop, debouncedPlayTypingSound, extendFocusSession, preloadedIntroUrl, setPreloadedIntroUrl,
     };
 
     return (

@@ -18,6 +18,8 @@ import { AnimatePresence } from 'framer-motion';
 import { CongratsModal } from './components/Modals/CongratsModal';
 import { BackToFocusModal } from './components/Modals/BackToFocusModal';
 import { SOSFocusModal } from './components/Modals/SOSFocusModal'; // Importar SOSFocusModal
+import { INTRO_AUDIO_URL } from './utils/constants';
+import usePreloadAudio from './hooks/usePreloadAudio';
 
 const PomodoroLayout: React.FC = () => {
     const { currentPhase, styles, isRunning } = usePomodoro();
@@ -182,11 +184,79 @@ const PomodoroLayout: React.FC = () => {
 
 // Componente App principal que fornece o contexto
 const App: React.FC = () => {
+    // Chame o hook aqui, no nível que renderiza o Provider
+    const { preloadedUrl: preloadedIntroUrl, isLoading: isPreloadingIntro, error: preloadIntroError } = usePreloadAudio(INTRO_AUDIO_URL);
+
+    // Você pode usar isLoading e error para mostrar feedback se desejar
+    useEffect(() => {
+        if (isPreloadingIntro) {
+            console.log("Pré-carregando áudio de introdução...");
+        }
+        if (preloadIntroError) {
+            console.error("Erro ao pré-carregar áudio de introdução:", preloadIntroError);
+        }
+        if (preloadedIntroUrl) {
+            console.log("Áudio de introdução pré-carregado pronto!");
+        }
+    }, [isPreloadingIntro, preloadIntroError, preloadedIntroUrl]);
+
+
+    // O valor do provider agora precisa incluir a URL pré-carregada
+    // Você precisa pegar os outros valores do estado gerenciado pelo PomodoroProvider
+    // A forma exata de fazer isso depende de como seu PomodoroProvider é implementado internamente.
+    // Se PomodoroProvider já gerencia seu próprio estado, você pode precisar
+    // modificar o PomodoroProvider para aceitar preloadedIntroUrl como prop
+    // ou criar um wrapper.
+
+    // *** OPÇÃO 1: Se PomodoroProvider gerencia seu próprio estado ***
+    // (Esta é a abordagem mais comum e limpa)
+    // Modifique PomodoroProvider para aceitar a URL como prop:
+    /*
+    interface PomodoroProviderProps {
+         children: React.ReactNode;
+         preloadedIntroUrl: string | null; // Adicione esta prop
+    }
+    const PomodoroProvider = ({ children, preloadedIntroUrl }: PomodoroProviderProps) => {
+         // ... seu estado interno (useState, useReducer) ...
+         const contextValue: PomodoroContextState = {
+             // ... seus outros valores de estado ...
+             preloadedIntroUrl: preloadedIntroUrl, // Use a prop aqui
+         };
+         return (
+             <PomodoroContext.Provider value={contextValue}>
+                 {children}
+             </PomodoroContext.Provider>
+         );
+    }
+    */
+    // E então use assim no App:
     return (
-        <PomodoroProvider>
+        <PomodoroProvider preloadedIntroUrl={preloadedIntroUrl}>
             <PomodoroLayout />
         </PomodoroProvider>
     );
+
+    // *** OPÇÃO 2: Se você monta o value manualmente aqui (menos comum) ***
+    /*
+    const providerValue: PomodoroContextState = {
+         // ... você precisaria ter todos os outros valores do contexto aqui ...
+         // Exemplo:
+         currentPhase: 'Work', // Placeholder - Isso viria do estado real
+         styles: { ... }, // Placeholder
+         isRunning: false, // Placeholder
+         playSound: (id) => console.log(id), // Placeholder
+         targetMusicVolume: 0.5, // Placeholder
+         // E o valor pré-carregado:
+         preloadedIntroUrl: preloadedIntroUrl,
+    };
+    return (
+        // CUIDADO: Se PomodoroProvider tem estado interno, esta abordagem sobrescreveria tudo.
+        // Use a OPÇÃO 1 se possível.
+        <PomodoroContext.Provider value={providerValue}>
+             <PomodoroLayout />
+        </PomodoroContext.Provider>
+    );
+    */
 };
 
 export default App;

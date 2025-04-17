@@ -5,7 +5,7 @@ import { usePomodoro } from '../../contexts/PomodoroContext';
 import { FiPlay, FiPause, FiSkipBack, FiSkipForward, FiVolume2, FiVolumeX, FiShuffle } from 'react-icons/fi';
 import { SeekBar } from './SeekBar';
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
-import { FOCUS_TARGET_VOLUME, BREAK_TARGET_VOLUME, DEFAULT_MUSIC_VOLUME } from '../../utils/constants';
+import { FOCUS_TARGET_VOLUME, BREAK_TARGET_VOLUME, DEFAULT_MUSIC_VOLUME, INTRO_TRACK_ID } from '../../utils/constants';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { WelcomeModal } from '../Modals/WelcomeModal';
 
@@ -43,7 +43,7 @@ const getRandomIndexExcept = (
 };
 
 export const MusicPlayer: React.FC = () => {
-    const { styles, playSound, targetMusicVolume, isRunning: isPomodoroRunning, currentPhase } = usePomodoro();
+    const { styles, playSound, targetMusicVolume, isRunning: isPomodoroRunning, currentPhase, preloadedIntroUrl } = usePomodoro();
     const [selectedCategory, setSelectedCategory] = useState<MusicCategory>('music');
     const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -310,43 +310,60 @@ export const MusicPlayer: React.FC = () => {
         if (!audio) return;
         let playPromise: Promise<void> | undefined;
 
-        if (currentTrack && audio.src !== currentTrack.src) {
-            console.log('Effect: Loading new track source:', currentTrack.src);
-            audio.src = currentTrack.src;
-            audio.load();
-            previousTrackRef.current = currentTrack;
-            setCurrentTime(0);
-            setDuration(0);
-        } else if (!currentTrack && audio.src) {
-            console.log('Effect: No track selected, resetting audio.');
-            audio.pause();
-            audio.src = '';
-            previousTrackRef.current = null;
-            setCurrentTime(0);
-            setDuration(0);
-            setIsPlaying(false);
-        }
-
         if (currentTrack) {
+            // *** A MUDANÇA PRINCIPAL ESTÁ AQUI ***
+            const isIntroTrack = currentTrack.id === INTRO_TRACK_ID;
+            // Use a URL pré-carregada SE for a faixa de introdução E a URL estiver disponível
+            const targetSrc = isIntroTrack && preloadedIntroUrl ? preloadedIntroUrl : currentTrack.src;
+
+            // Verifica se a fonte *alvo* é diferente da fonte atual do <audio>
+            if (audio.src !== targetSrc) {
+                console.log(`MusicPlayer Effect: Loading track source. ` +
+                            `Track: ${currentTrack.title}. ` +
+                            `Using ${targetSrc === preloadedIntroUrl ? 'PRELOADED URL' : 'Original URL'}: ${targetSrc}`);
+
+                audio.src = targetSrc; // Define a fonte (pré-carregada ou original)
+                audio.load(); // Importante para aplicar a nova src
+                previousTrackRef.current = currentTrack; // Guarda a referência
+                setCurrentTime(0); // Reseta o tempo
+                setDuration(0); // Reseta a duração
+            }
+            // *** FIM DA MUDANÇA PRINCIPAL ***
+
+            // Lógica de Play/Pause continua a mesma
             if (isPlaying) {
                 if (audio.paused) {
-                    console.log('Effect: State is Play=true, Audio is paused. Playing track:', currentTrack.title);
+                    console.log('MusicPlayer Effect: State is Play=true, Audio is paused. Playing track:', currentTrack.title);
                     playPromise = audio.play();
                     playPromise?.catch((error) => {
+                        // Ignora AbortError que pode acontecer se a faixa mudar rapidamente
                         if (error.name !== 'AbortError') {
                             console.error('Error attempting to play audio:', error);
-                            setIsPlaying(false);
+                            // Poderia tentar novamente ou mostrar um erro para o usuário
+                            // setIsPlaying(false); // Comentar isso pode evitar flickers se o erro for transitório
+                        } else {
+                            console.warn("Audio play() promise aborted, likely due to rapid source change.");
                         }
                     });
                 }
             } else {
                 if (!audio.paused) {
-                    console.log('Effect: State is Play=false, Audio is playing. Pausing track:', currentTrack.title);
+                    console.log('MusicPlayer Effect: State is Play=false, Audio is playing. Pausing track:', currentTrack.title);
                     audio.pause();
                 }
             }
+        } else if (!currentTrack && audio.src) {
+            // Lógica para quando nenhuma faixa está selecionada
+            console.log('MusicPlayer Effect: No track selected, resetting audio.');
+            audio.pause();
+            audio.src = '';
+            previousTrackRef.current = null;
+            setCurrentTime(0);
+            setDuration(0);
+            setIsPlaying(false); // Garante que o estado de play seja falso
         }
-    }, [currentTrack, isPlaying]);
+
+    }, [currentTrack, isPlaying, preloadedIntroUrl]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
