@@ -47,14 +47,14 @@
   /* ---- ANIMAÇÃO SOFT PULSE (Padrão) ---- */
   .animate-soft-pulse {
     /* Duração mais longa (10s), variação suave (0.85) */
-    animation: soft-pulse 10s ease-in-out infinite;
+    animation: soft-pulse 5s ease-in-out infinite;
   }
   /* ---------------------------------- */
 
   /* ---- NOVA ANIMAÇÃO INTENSE PULSE (Work Ativo) ---- */
   .animate-intense-pulse {
      /* Duração mais curta (ex: 3s), variação maior (ex: 0.6) */
-    animation: intense-pulse 3s ease-in-out infinite;
+    animation: intense-pulse 5s ease-in-out infinite;
   }
   /* ---------------------------------- */
 }
@@ -75,13 +75,13 @@
 /* ---- SOFT PULSE KEYFRAMES (Padrão) ---- */
 @keyframes soft-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; } /* Suave */
+  50% { opacity: 0.5; } /* Suave */
 }
 /* ---------------------------------- */
 
 /* ---- NOVOS KEYFRAMES INTENSE PULSE (Work Ativo) ---- */
 @keyframes intense-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; } /* Mais intenso - ajuste 0.6 conforme necessário */
+  50% { opacity: 0.5; } /* Mais intenso - ajuste 0.6 conforme necessário */
 }
 /* ---------------------------------- */

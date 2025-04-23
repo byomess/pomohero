@@ -22,10 +22,10 @@ export const BacklogList: React.FC = () => {
     };
 
     return (
-        <div className={`w-full h-full p-5 md:p-6 rounded-3xl shadow-xl backdrop-blur-sm bg-black/25 ${styles.textColor} flex flex-col`}>
+        <div className={`h-full w-full max-w-md mx-auto p-4 md:p-6 rounded-4xl shadow-xl backdrop-blur-sm bg-black/25 ${styles.textColor} flex flex-col`}>
 
             <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3 flex-shrink-0">
-                <h2 className="text-xl font-semibold opacity-95">Backlog</h2>
+                <h2 className="text-xl font-semibold opacity-95">Seu Backlog</h2>
                 {backlogTasks.length > 0 && (
                     <button
                         onClick={clearBacklog} aria-label="Limpar todo o backlog" title="Limpar Backlog"

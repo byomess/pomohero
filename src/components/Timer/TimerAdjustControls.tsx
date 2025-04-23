@@ -2,7 +2,6 @@
 import React from 'react';
 import { FiMinus, FiPlus, FiZap, FiFastForward } from 'react-icons/fi';
 import { usePomodoro } from '../../contexts/PomodoroContext';
-import { formatTime } from '../../utils/formatters';
 
 export const TimerAdjustControls: React.FC = () => {
     const {
@@ -23,7 +22,7 @@ export const TimerAdjustControls: React.FC = () => {
     const HYPERFOCUS_SECONDS = settings.workDuration;
 
     const showAdjustControls = currentPhase === 'Work' && !isRunning && !isEffectRunning;
-    const showDurationInfo = isRunning && currentPhase !== 'Work';
+    
     const showExtensionControls = isRunning && currentPhase === 'Work' && showExtensionOptions && timeLeft > 0;
 
     const handleDecrement = () => adjustTimeLeft(Math.max(0, timeLeft - 60));
@@ -51,20 +50,10 @@ export const TimerAdjustControls: React.FC = () => {
     `;
 
     return (
-        <div className="flex flex-col justify-center items-center min-h-[44px] mb-2 relative z-10 px-4">
+        <div className="flex flex-col justify-center items-center min-h-[2rem] relative z-10 px-4">
 
             {showAdjustControls && (
-                <div className="flex justify-center items-center space-x-4 animate-fade-in-down">
-                    <button
-                        onClick={handleDecrement} aria-label="Diminuir 1 minuto" title="Diminuir 1 minuto"
-                        className={adjustButtonStyle}
-                        disabled={isDecrementDisabled}
-                    >
-                        <FiMinus className="h-4 w-4" />
-                    </button>
-                    <span className="text-xs opacity-75 font-medium tracking-wide select-none">
-                        Ajustar Tempo
-                    </span>
+                <div className="flex flex-col justify-center items-center space-y-24 animate-fade-in animate-fade-out">
                     <button
                         onClick={handleIncrement} aria-label="Aumentar 1 minuto" title="Aumentar 1 minuto"
                         className={adjustButtonStyle}
@@ -72,20 +61,22 @@ export const TimerAdjustControls: React.FC = () => {
                     >
                         <FiPlus className="h-4 w-4" />
                     </button>
-                </div>
-            )}
-
-            {showDurationInfo && (
-                <div className="flex justify-center items-center animate-fade-in">
-                    <span className="text-xs opacity-75 font-medium tracking-wide select-none" title="Tempo configurado para esta sessão">
-                        Sessão de {formatTime(initialDuration)}
-                    </span>
+                    <button
+                        onClick={handleDecrement} aria-label="Diminuir 1 minuto" title="Diminuir 1 minuto"
+                        className={adjustButtonStyle}
+                        disabled={isDecrementDisabled}
+                    >
+                        <FiMinus className="h-4 w-4" />
+                    </button>
+                    {/* <span className="text-xs opacity-75 font-medium tracking-wide select-none">
+                        Ajustar
+                    </span> */}
                 </div>
             )}
 
             {showExtensionControls && (
                 <div className="flex justify-center items-center space-x-3 animate-fade-in-up">
-                     <button
+                    <button
                         onClick={handleExtend5Min}
                         className={extensionButtonStyle}
                         title={isExtensionDisabled ? "Extensão já utilizada nesta sessão" : "Adicionar 5 minutos à sessão atual"}
@@ -94,7 +85,7 @@ export const TimerAdjustControls: React.FC = () => {
                         <FiFastForward className="h-3.5 w-3.5 opacity-80" />
                         <span>+5 min</span>
                     </button>
-                     <button
+                    <button
                         onClick={handleExtendHyperfocus}
                         className={extensionButtonStyle}
                         title={isExtensionDisabled ? "Extensão já utilizada nesta sessão" : `Adicionar ${Math.round(HYPERFOCUS_SECONDS / 60)} minutos (hiperfoco)`}

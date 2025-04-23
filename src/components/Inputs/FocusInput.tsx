@@ -1,4 +1,4 @@
-import React, { useState, KeyboardEvent, useRef, useEffect } from 'react';
+import React, { useState, KeyboardEvent, useRef, useEffect, useMemo } from 'react';
 import { usePomodoro } from '../../contexts/PomodoroContext';
 import { FiPlus, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 
@@ -15,12 +15,35 @@ const baseStyles = {
     addButton: 'p-2 rounded-lg hover:bg-white/25 transition-colors flex-shrink-0',
 };
 
+const focusLabelMessages = [
+    "Devagar, ok? O que precisa de foco agora?",
+    "No que você quer focar agora?",
+    "Vamos com calma. Qual a prioridade?",
+    "O que te chama agora?",
+    "Onde você quer colocar energia?",
+    "O que merece sua atenção agora?",
+    "Um de cada vez. Por onde começamos?",
+    "Foca só no que importa agora.",
+    "Sem pressa. Qual é o primeiro passo?",
+    "Seja gentil. O que precisa de atenção?",
+    "Vai dar certo. O que você quer focar?",
+    "Estou com você. Por onde começamos?",
+    "Vamos juntos. O que precisa de foco?",
+    "Um passo de cada vez. Qual a prioridade?",
+    "Respira fundo. O que precisa de atenção?",
+    "Vai valer a pena. Qual é o foco?",
+];
+
 const FocusInput: React.FC = () => {
     const {
         currentFocusPoints, setCurrentFocusPoints, addFocusPoint, removeFocusPoint,
         styles, debouncedPlayTypingSound, playSound
     } = usePomodoro();
-    // Removendo: isRunning, isEffectRunning
+
+    const randomLabel = useMemo(() => {
+        const index = Math.floor(Math.random() * focusLabelMessages.length);
+        return focusLabelMessages[index];
+    }, []);
 
     const [newPoint, setNewPoint] = useState('');
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -94,7 +117,7 @@ const FocusInput: React.FC = () => {
     return (
         <div className="space-y-2 flex flex-col h-full">
             <label htmlFor="newFocusPoint" className="block text-sm font-medium opacity-90 flex-shrink-0">
-                Pontos de foco: (Editável) {/* Simplificado para sempre editável */}
+                {randomLabel}
             </label>
 
             <div className="flex items-center space-x-2 flex-shrink-0">
@@ -103,7 +126,7 @@ const FocusInput: React.FC = () => {
                     onChange={(e) => setNewPoint(e.target.value)} onKeyDown={handleAddKeyDown}
                     placeholder="Adicionar novo ponto..."
                     className={`flex-grow ${baseStyles.inputBase} ${styles.inputBgColor} ${styles.textColor}`}
-                    // readOnly e disabled removidos
+                // readOnly e disabled removidos
                 />
                 <button
                     type="button" onClick={handleAddClick} className={`${baseStyles.addButton} ${styles.buttonColor} ${!newPoint.trim() ? baseStyles.buttonDisabled : ''}`}

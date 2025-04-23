@@ -3,6 +3,7 @@ export const DEFAULT_SHORT_BREAK_DURATION = 5 * 60;
 export const DEFAULT_LONG_BREAK_DURATION = 15 * 60;
 export const DEFAULT_CYCLES_BEFORE_LONG_BREAK = 4;
 export const DEFAULT_SOUND_ENABLED = true;
+export const DEFAULT_NAVBAR_LABELS = false;
 
 export const TYPING_SOUND_DEBOUNCE_MS = 150;
 export const FOCUS_START_EFFECT_DURATION = 2000;
@@ -33,6 +34,8 @@ export const CURRENT_SESSION_START_TIME_STORAGE_KEY = 'pomohero_current_session_
 export const CURRENT_FOCUS_POINTS_STORAGE_KEY = 'pomohero_current_focus_points';
 export const CURRENT_FEEDBACK_NOTES_STORAGE_KEY = 'pomohero_current_feedback_notes';
 export const NEXT_FOCUS_PLANS_STORAGE_KEY = 'pomohero_next_focus_plans';
+export const PHASE_INDEX_STORAGE_KEY = 'pomohero_phase_index';
+export const PLAYER_FLOATING_BUTTON_POSITION_STORAGE_KEY = 'pomohero_player_floating_button_position';
 
 export const DEFAULT_LOCAL_STORAGE_SAVE_DEBOUNCE_MS = 3000; // Default debounce time for local storage saves
 export const DEFAULT_MUSIC_VOLUME = 0.5; // Default volume for music player
@@ -61,6 +64,26 @@ export const PRIMARY_SHORT_BREAK_PAUSED = 'bg-cyan-600';
 export const PRIMARY_SHORT_BREAK_RUNNING = 'bg-cyan-500';
 export const PRIMARY_LONG_BREAK_PAUSED = 'bg-emerald-600';
 export const PRIMARY_LONG_BREAK_RUNNING = 'bg-emerald-500';
+
+export const TEXT_PRIMARY_FOCUS_PAUSED = 'text-slate-400';
+export const TEXT_PRIMARY_FOCUS_RUNNING = 'text-purple-500';
+export const TEXT_PRIMARY_FOCUS_FLASHING = 'text-purple-800';
+export const TEXT_PRIMARY_HYPERFOCUS_RUNNING = 'text-red-500';
+export const TEXT_PRIMARY_HYPERFOCUS_PAUSED = 'text-red-800';
+export const TEXT_PRIMARY_SHORT_BREAK_PAUSED = 'text-cyan-600';
+export const TEXT_PRIMARY_SHORT_BREAK_RUNNING = 'text-cyan-400';
+export const TEXT_PRIMARY_LONG_BREAK_PAUSED = 'text-emerald-600';
+export const TEXT_PRIMARY_LONG_BREAK_RUNNING = 'text-emerald-400';
+
+export const BORDER_PRIMARY_FOCUS_PAUSED = 'border-slate-400';
+export const BORDER_PRIMARY_FOCUS_RUNNING = 'border-purple-500';
+export const BORDER_PRIMARY_FOCUS_FLASHING = 'border-purple-800';
+export const BORDER_PRIMARY_HYPERFOCUS_RUNNING = 'border-red-500';
+export const BORDER_PRIMARY_HYPERFOCUS_PAUSED = 'border-red-800';
+export const BORDER_PRIMARY_SHORT_BREAK_PAUSED = 'border-cyan-600';
+export const BORDER_PRIMARY_SHORT_BREAK_RUNNING = 'border-cyan-500';
+export const BORDER_PRIMARY_LONG_BREAK_PAUSED = 'border-emerald-600';
+export const BORDER_PRIMARY_LONG_BREAK_RUNNING = 'border-emerald-500';
 
 export const HYPERFOCUS_BG_RUNNING = 'bg-gradient-to-br from-red-900 to-rose-950'; // Darker red gradient
 export const HYPERFOCUS_BG_PAUSED = 'bg-gradient-to-br from-red-950 to-rose-950'; // Even darker, leaning towards rose

@@ -15,15 +15,15 @@ export const FeedbackInput: React.FC = () => {
     const isRequired = history.length > 0 && !lastEntryHadFeedback && !isEffectRunning;
 
     const getLabel = () => {
-        if (lastEntryHadFeedback) return 'Feedback da sessão anterior: (Salvo)';
-        if (isRequired) return 'Feedback da sessão anterior: (Editável - Obrigatório)';
-        return 'Feedback da sessão anterior:';
+        if (lastEntryHadFeedback) return 'Me conta como foi:';
+        if (isRequired) return 'Me conta como foi:';
+        return 'Me conta como foi:';
     };
 
     const getPlaceholder = () => {
         if (lastEntryHadFeedback) return history[0].feedbackNotes;
-        if (isRequired) return "Como foi a última sessão de foco? (Obrigatório)";
-        return "Como foi a última sessão de foco?";
+        if (isRequired) return "Escreve aqui...";
+        return "Escreve aqui...";
     };
 
     return (

@@ -43,7 +43,7 @@ export const NextFocusInput: React.FC = () => {
         // Use flex-col and h-full to allow child elements to control height distribution
         <div className="space-y-2 flex flex-col h-full"> {/* Reduced space-y */}
             <label htmlFor="newNextPlan" className="block text-sm font-medium opacity-90 flex-shrink-0">
-                Planos para o próximo foco:
+                Quer anotar oquê fazer depois?
             </label>
 
             <div className="flex items-center space-x-2 flex-shrink-0">
@@ -59,7 +59,7 @@ export const NextFocusInput: React.FC = () => {
                 > <FiPlus className="h-5 w-5" /> </button>
             </div>
 
-            <div className="flex-1 min-h-0 mt-1 overflow-y-auto custom-scrollbar pr-1 pb-1"> {/* Use flex-1 to grow, min-h-0 to allow shrinking, overflow-auto for scroll */}
+            <div className="overflow-y-auto max-h-40 mt-1 custom-scrollbar pr-1 pb-1">
                 {nextFocusPlans.length > 0 ? (
                     <ul className="space-y-1.5"> {/* No absolute positioning needed */}
                         {nextFocusPlans.map((plan, index) => (

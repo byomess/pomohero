@@ -7,7 +7,7 @@ import { SeekBar } from './SeekBar';
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 import { FOCUS_TARGET_VOLUME, BREAK_TARGET_VOLUME, INTRO_TRACK_ID } from '../../utils/constants';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { WelcomeModal } from '../Modals/WelcomeModal';
+// import { WelcomeModal } from '../Modals/WelcomeModal';
 
 const categories: { id: MusicCategory; name: string }[] = [
     { id: 'music', name: 'Músicas' },
@@ -452,9 +452,9 @@ export const MusicPlayer: React.FC = () => {
 
     return (
         <>
-            <WelcomeModal isNewUser={isNewUser} />
+            {/* <WelcomeModal isNewUser={isNewUser} /> */}
             <div
-                className={`w-full max-w-md mx-auto h-full p-4 sm:p-6 rounded-3xl shadow-xl backdrop-blur-xs bg-black/35 ${styles.textColor} flex flex-col overflow-hidden`}
+                className={`w-full h-full ${styles.textColor} flex flex-col overflow-hidden`}
             >
                 <audio
                     ref={audioRef}

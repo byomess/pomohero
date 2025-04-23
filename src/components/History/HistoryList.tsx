@@ -4,16 +4,16 @@ import React, { useState } from 'react';
 import { usePomodoro } from '../../contexts/PomodoroContext';
 import { HistoryItem } from './HistoryItem';
 import { ManualHistoryEntryForm } from './ManualHistoryEntryForm';
-import { FiPlusCircle } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
 
 export const HistoryList: React.FC = () => {
     const { history, styles } = usePomodoro();
     const [showManualForm, setShowManualForm] = useState(false);
 
     return (
-        <div className={`w-full max-w-md p-5 md:p-6 rounded-3xl shadow-xl backdrop-blur-sm bg-black/25 ${styles.textColor} flex flex-col min-h-[400px] max-h-[calc(100vh-80px)]`}>
+        <div className={`h-full w-full max-w-md mx-auto p-4 md:p-6 rounded-4xl shadow-xl backdrop-blur-sm bg-black/25 ${styles.textColor} flex flex-col max-h-full overflow-hidden transition-colors duration-300 ease-in-out`}>
             <div className="flex justify-between items-center mb-5 border-b border-white/10 pb-3 flex-shrink-0">
-                <h2 className="text-xl font-semibold opacity-95">Histórico de Foco</h2>
+                <h2 className="text-xl font-semibold opacity-95">Seu Histórico de Focos</h2>
                 <button
                     onClick={() => setShowManualForm(!showManualForm)}
                     aria-label={showManualForm ? "Fechar adição manual" : "Adicionar entrada manual"}
@@ -22,7 +22,7 @@ export const HistoryList: React.FC = () => {
                         showManualForm ? 'rotate-[135deg] bg-white/25' : 'rotate-0'
                     }`}
                 >
-                    <FiPlusCircle className="h-5 w-5" />
+                    <FiPlus className="h-5 w-5" />
                 </button>
             </div>
 
